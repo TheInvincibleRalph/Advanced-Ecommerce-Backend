@@ -101,9 +101,21 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Query the database with pagination and sorting
+	// Query the database with pagination, sorting, filtering, and search
 	var products []models.Product
 	query := db.Model(&models.Product{})
+	if category != "" {
+		query = query.Where("category = ?", category)
+	}
+	if minPriceStr != "" {
+		query = query.Where("price >= ?", minPrice)
+	}
+	if maxPriceStr != "" {
+		query = query.Where("price <= ?", maxPrice)
+	}
+	if search != "" {
+		query = query.Where("name ILIKE ?", "%"+search+"%")
+	}
 	query = query.Offset((page - 1) * limit).Limit(limit)
 	if strings.ToLower(order) == "desc" {
 		query = query.Order(sortBy + " desc")
