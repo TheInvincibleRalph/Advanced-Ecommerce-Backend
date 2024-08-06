@@ -910,3 +910,31 @@ if search != "" {
 ```
 - `query.Where("name ILIKE ?", "%"+search+"%")`: This adds a condition to the query to search for products where the `name` matches the `search` term case-insensitively.
 - `%` before and after the search term: These are wildcards that allow for partial matches.
+
+
+## On Extracting Variables from URL using Mux
+
+The line `vars := mux.Vars(r)` is used to extract variables from the URL path in a request when using the Gorilla Mux router in Go.
+
+### How It Works
+
+When you define routes in Gorilla Mux, you can include variables in the URL path. For example, if you have a route defined as `/cart/{id}`, `{id}` is a variable placeholder. When a request matches this route, you can extract the value of `id` using `mux.Vars(r)`.
+
+
+### Line-by-Line Breakdown
+
+1. **Extract Variables**:
+   ```go
+   vars := mux.Vars(r)
+   ```
+   This line extracts the variables from the URL path and stores them in a map. For example, if the URL is `/cart/123`, `vars` will contain `{"id": "123"}`.
+
+2. **Convert ID to Integer**:
+   ```go
+   id, err := strconv.Atoi(vars["id"])
+   ```
+   Retrieve the `id` value from the `vars` map and convert it from a string to an integer. If the conversion fails, return a `400 Bad Request` error.
+
+
+
+
