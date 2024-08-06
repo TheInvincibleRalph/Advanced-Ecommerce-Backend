@@ -37,6 +37,14 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 	sortBy := r.URL.Query().Get("sort_by")
 	order := r.URL.Query().Get("order")
 
+	// Retrieve filtering parameters
+	category := r.URL.Query().Get("category")
+	minPriceStr := r.URL.Query().Get("min_price")
+	maxPriceStr := r.URL.Query().Get("max_price")
+
+	// Retrive search parameters
+	search := r.URL.Query().Get("search")
+
 	// Define allowed sort columns
 	allowedSortFields := map[string]bool{
 		"name":     true,
@@ -73,6 +81,24 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 	}
 	if order == "" {
 		order = "asc" // Default to ascending order
+	}
+
+	// Parse price filters
+	var minPrice, maxPrice float64
+	var err error
+	if minPriceStr != "" {
+		minPrice, err = strconv.ParseFloat(minPriceStr, 64)
+		if err != nil {
+			http.Error(w, "Invalid minimum price", http.StatusBadRequest)
+			return
+		}
+	}
+	if maxPriceStr != "" {
+		maxPrice, err = strconv.ParseFloat(maxPriceStr, 64)
+		if err != nil {
+			http.Error(w, "Invalid maximum price", http.StatusBadRequest)
+			return
+		}
 	}
 
 	// Query the database with pagination and sorting

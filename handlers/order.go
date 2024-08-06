@@ -95,6 +95,7 @@ func GetOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//// Encode the order struct to JSON and write it to the response
 	json.NewEncoder(w).Encode(order)
 }
 

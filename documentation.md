@@ -673,3 +673,240 @@ Assuming `limit = 10`:
 - **Page 3**: `Offset((3 - 1) * 10).Limit(10)` returns records 20 to 29.
 
 This setup allows you to retrieve records in chunks based on the page number and the number of records per page, which is crucial for handling large datasets efficiently.
+
+
+## Filtering Feature and Real World Explanation
+
+### Explanation of Code
+
+This part of the code is responsible for parsing the minimum and maximum price filters from the query parameters in a HTTP request. Let's break it down:
+
+```go
+var minPrice, maxPrice float64
+var err error
+
+if minPriceStr != "" {
+    minPrice, err = strconv.ParseFloat(minPriceStr, 64)
+    if err != nil {
+        http.Error(w, "Invalid minimum price", http.StatusBadRequest)
+        return
+    }
+}
+
+if maxPriceStr != "" {
+    maxPrice, err = strconv.ParseFloat(maxPriceStr, 64)
+    if err != nil {
+        http.Error(w, "Invalid maximum price", http.StatusBadRequest)
+        return
+    }
+}
+```
+
+### Line-by-Line Explanation
+
+1. **Variable Declaration**:
+   ```go
+   var minPrice, maxPrice float64
+   var err error
+   ```
+   - Declare `minPrice` and `maxPrice` as `float64` to hold the parsed price values.
+   - Declare `err` to capture any errors that occur during parsing.
+
+2. **Parsing `minPriceStr`**:
+   ```go
+   if minPriceStr != "" {
+       minPrice, err = strconv.ParseFloat(minPriceStr, 64)
+       if err != nil {
+           http.Error(w, "Invalid minimum price", http.StatusBadRequest)
+           return
+       }
+   }
+   ```
+   - Check if `minPriceStr` is not an empty string (i.e., the user provided a minimum price).
+   - Attempt to parse `minPriceStr` to a `float64`.
+   - If parsing fails (`err` is not `nil`), respond with a "400 Bad Request" status and an error message.
+
+3. **Parsing `maxPriceStr`**:
+   ```go
+   if maxPriceStr != "" {
+       maxPrice, err = strconv.ParseFloat(maxPriceStr, 64)
+       if err != nil {
+           http.Error(w, "Invalid maximum price", http.StatusBadRequest)
+           return
+       }
+   }
+   ```
+   - Similar to `minPriceStr`, check if `maxPriceStr` is not empty.
+   - Attempt to parse `maxPriceStr` to a `float64`.
+   - If parsing fails, respond with a "400 Bad Request" status and an error message.
+
+### Application in a Real-World E-commerce Website
+
+In an e-commerce website, customers often want to filter products based on price. This feature enables users to specify a price range and see products within that range. Here’s how this applies in a real-world scenario:
+
+1. **User Interaction**:
+   - A user visits the product listing page and sees filter options.
+   - The user sets the minimum and maximum price range, e.g., min: $50, max: $200.
+
+2. **Client Request**:
+   - The client's browser sends an HTTP GET request with these query parameters:
+     ```
+     GET /products?min_price=50&max_price=200
+     ```
+
+3. **Backend Handling**:
+   - The server receives the request and extracts `min_price` and `max_price` from the query parameters.
+   - The code parses these values to ensure they are valid numbers.
+   - The server uses these parsed values to filter products from the database that fall within the specified price range.
+
+4. **Database Query**:
+   - The query might look something like this:
+     ```go
+     if minPriceStr != "" {
+         query = query.Where("price >= ?", minPrice)
+     }
+     if maxPriceStr != "" {
+         query = query.Where("price <= ?", maxPrice)
+     }
+     ```
+
+5. **Response to Client**:
+   - The server retrieves the filtered products from the database.
+   - The server sends a JSON response back to the client with the filtered product list.
+
+   **How a query with search, filtering, pagination, and sorting would look like:**
+
+   `GET /products?page=2&limit=5&sort_by=price&order=desc&category=electronics&min_price=100&max_price=1000&search=phone`
+   This request retrieves the second page of products (5 per page), sorted by price in descending order, filtered by category "electronics" and price range 100 to 1000, with a search term "phone".
+
+
+## ON SQL `ILIKE` and Wildcard Character
+
+   `ILIKE` is a SQL keyword used in PostgreSQL to perform a case-insensitive pattern match. It is similar to the `LIKE` operator, but `ILIKE` ignores case when matching text.
+
+### How `ILIKE` Works
+
+When you use `ILIKE` in a SQL query, it matches the pattern regardless of whether the characters are uppercase or lowercase. This is particularly useful when you want to perform a case-insensitive search.
+
+### Example Usage
+
+Suppose you have a table called `products` with a column `name`. You want to search for products whose names contain the word "phone" regardless of whether "phone" is written as "Phone", "PHONE", "pHoNe", etc.
+
+```sql
+SELECT * FROM products WHERE name ILIKE '%phone%';
+```
+
+### Explanation
+
+- `ILIKE`: The keyword indicating a case-insensitive search.
+- `'phone'`: The pattern you are searching for.
+- `%`: Wildcard characters that match any sequence of characters (including no characters).
+
+### Real-World Application in E-commerce
+
+In an e-commerce website, users might search for products using different cases. For example, a user might search for "Phone", "phone", "PHONE", etc. By using `ILIKE`, the backend can handle these searches case-insensitively, providing a more user-friendly search experience.
+
+### Integrating `ILIKE` into Go Code
+
+Let's modify the `GetProducts` handler to use `ILIKE` for case-insensitive search:
+
+**Code**:
+```go
+func GetProducts(w http.ResponseWriter, r *http.Request) {
+	// Retrieve query parameters
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+	sortBy := r.URL.Query().Get("sort_by")
+	order := r.URL.Query().Get("order")
+	category := r.URL.Query().Get("category")
+	minPriceStr := r.URL.Query().Get("min_price")
+	maxPriceStr := r.URL.Query().Get("max_price")
+	search := r.URL.Query().Get("search")
+
+	// Set default values for pagination
+	page := 1
+	limit := 10
+	if pageStr != "" {
+		var err error
+		page, err = strconv.Atoi(pageStr)
+		if err != nil {
+			http.Error(w, "Invalid page number", http.StatusBadRequest)
+			return
+		}
+	}
+	if limitStr != "" {
+		var err error
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil {
+			http.Error(w, "Invalid limit number", http.StatusBadRequest)
+			return
+		}
+	}
+
+	// Set default sorting
+	if sortBy == "" {
+		sortBy = "name"
+	}
+	if order == "" {
+		order = "asc"
+	}
+
+	// Parse price filters
+	var minPrice, maxPrice float64
+	var err error
+	if minPriceStr != "" {
+		minPrice, err = strconv.ParseFloat(minPriceStr, 64)
+		if err != nil {
+			http.Error(w, "Invalid minimum price", http.StatusBadRequest)
+			return
+		}
+	}
+	if maxPriceStr != "" {
+		maxPrice, err = strconv.ParseFloat(maxPriceStr, 64)
+		if err != nil {
+			http.Error(w, "Invalid maximum price", http.StatusBadRequest)
+			return
+		}
+	}
+
+	// Query the database with pagination, sorting, filtering, and search
+	var products []models.Product
+	query := db.Model(&models.Product{})
+	if category != "" {
+		query = query.Where("category = ?", category)
+	}
+	if minPriceStr != "" {
+		query = query.Where("price >= ?", minPrice)
+	}
+	if maxPriceStr != "" {
+		query = query.Where("price <= ?", maxPrice)
+	}
+	if search != "" {
+		query = query.Where("name ILIKE ?", "%"+search+"%")
+	}
+	query = query.Offset((page - 1) * limit).Limit(limit)
+	if strings.ToLower(order) == "desc" {
+		query = query.Order(sortBy + " desc")
+	} else {
+		query = query.Order(sortBy + " asc")
+	}
+	if err := query.Find(&products).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Return the results
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(products)
+}
+```
+
+### Explanation of the Search Part
+
+```go
+if search != "" {
+	query = query.Where("name ILIKE ?", "%"+search+"%")
+}
+```
+- `query.Where("name ILIKE ?", "%"+search+"%")`: This adds a condition to the query to search for products where the `name` matches the `search` term case-insensitively.
+- `%` before and after the search term: These are wildcards that allow for partial matches.
