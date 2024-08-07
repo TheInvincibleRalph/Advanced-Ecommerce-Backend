@@ -1194,22 +1194,31 @@ func PaymentHandler(w http.ResponseWriter, r *http.Request) {
 		// Prevents or handles duplicate charges gracefully
 		chargeParams.IdempotencyKey = stripe.String(paymentRequest.TransactionID)
 
-		// Retry logic in case of failure
-		maxRetries := 3
-		var ch *stripe.Charge
-		for i := 0; i < maxRetries; i++ {
-			ch, err = charge.New(chargeParams)
-			if err != nil {
-				log.Printf("Stripe charge creation failed: %v", err)
-				time.Sleep(2 * time.Second)
-				continue
-			}
-			errorChan <- err
-			return
-		}
-		resultChan <- ch
-        return
-	}()
+	 // Retry logic in case of failure
+        maxRetries := 3
+        var ch *stripe.Charge 
+        for i := 0; i < maxRetries; i++ {
+            ch, err = charge.New(chargeParams)
+            if err != nil {
+                if stripeErr, ok := err.(*stripe.Error); ok {
+                    // Retry on certain transient errors
+                    if stripeErr.Type == stripe.ErrorTypeAPIConnection || stripeErr.Code == "lock_timeout" {
+                        log.Printf("Transient error: %v. Retrying...", err)
+                        time.Sleep(2 * time.Second)
+                        continue
+                    }
+                }
+                // Send the error to the error channel if not retryable
+                errorChan <- err
+                return
+            }
+            // If charge is successful, send it to result channel
+            resultChan <- ch
+            return
+        }
+        // If all retries are exhausted, send the last error to the error channel
+        errorChan <- err
+    }()
 
 	go func() {
 		wg.Wait()
@@ -1305,3 +1314,85 @@ In a real-world e-commerce application, you would use `charge.New` to process pa
 6. **Success Handling**: If the charge is successful, the server updates the order status, sends a receipt to the customer, and may trigger additional processes like inventory updates or shipping.
 
 This function is crucial for integrating Stripe's payment processing capabilities into your Go-based application, ensuring secure and reliable transactions for your customers.
+
+
+## On Implementing Stripe Subscription Pcakage
+
+```go
+package subscription
+
+import (
+    "net/http"
+    "github.com/stripe/stripe-go/v72"
+)
+
+// getC is a helper function that returns an instance of Client.
+// Assume getC is defined elsewhere in your package.
+func getC() Client {
+    return Client{
+        Key: stripe.Key, // Use the Stripe API key here.
+        B:   stripe.GetBackend(stripe.APIBackend), // Use the Stripe backend here.
+    }
+}
+
+// Client struct representing a Stripe client.
+// Assume this struct is defined elsewhere in your package.
+type Client struct {
+    Key string
+    B   stripe.Backend
+}
+
+// Cancel removes a subscription.
+func Cancel(id string, params *stripe.SubscriptionCancelParams) (*stripe.Subscription, error) {
+    return getC().Cancel(id, params)
+}
+
+// Cancel removes a subscription.
+func (c Client) Cancel(id string, params *stripe.SubscriptionCancelParams) (*stripe.Subscription, error) {
+    path := stripe.FormatURLPath("/v1/subscriptions/%s", id)
+    sub := &stripe.Subscription{}
+    err := c.B.Call(http.MethodDelete, path, c.Key, params, sub)
+    return sub, err
+}
+```
+
+### Explanation:
+
+1. **Client struct**: Represents the Stripe client, which has the method `Cancel`.
+    ```go
+    type Client struct {
+        Key string
+        B   stripe.Backend
+    }
+    ```
+
+2. **getC function**: Returns an instance of the `Client`. This function provides a way to get a `Client` instance with the necessary setup (API key, backend, etc.).
+    ```go
+    func getC() Client {
+        return Client{
+            Key: stripe.Key, // Use the Stripe API key here.
+            B:   stripe.GetBackend(stripe.APIBackend), // Use the Stripe backend here.
+        }
+    }
+    ```
+
+3. **Package-level Cancel function**: This function calls the `Cancel` method on the `Client` instance returned by `getC`.
+    ```go
+    func Cancel(id string, params *stripe.SubscriptionCancelParams) (*stripe.Subscription, error) {
+        return getC().Cancel(id, params)
+    }
+    ```
+
+4. **Method on Client (Cancel)**: This is the actual implementation that sends the HTTP request to cancel the subscription.
+    ```go
+    func (c Client) Cancel(id string, params *stripe.SubscriptionCancelParams) (*stripe.Subscription, error) {
+        path := stripe.FormatURLPath("/v1/subscriptions/%s", id)
+        sub := &stripe.Subscription{}
+        err := c.B.Call(http.MethodDelete, path, c.Key, params, sub)
+        return sub, err
+    }
+    ```
+
+
+
+

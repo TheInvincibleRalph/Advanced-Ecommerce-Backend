@@ -12,9 +12,11 @@ import (
 
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/charge"
+	"github.com/stripe/stripe-go/sub"
 	"github.com/theinvincible/ecommerce-backend/models"
 )
 
+// This handles one-time payments using Stripe
 func PaymentHandler(w http.ResponseWriter, r *http.Request) {
 	var paymentRequest models.Payment
 	var shipping models.Shipping
@@ -128,4 +130,22 @@ func PaymentHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Request timed out", http.StatusRequestTimeout)
 	}
 
+}
+
+// This handles recurring payments using Stripe
+func CreateSubscription(customerID, planID string) (*stripe.Subscription, error) {
+
+	// Initialize Stripe with secret key
+	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+
+	subParams := &stripe.SubscriptionParams{
+		Customer: stripe.String(customerID),
+		Items: []*stripe.SubscriptionItemsParams{
+			{
+				Plan: stripe.String(planID),
+			},
+		},
+	}
+
+	return sub.New(subParams)
 }
