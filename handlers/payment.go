@@ -12,6 +12,7 @@ import (
 
 	"github.com/stripe/stripe-go"
 	"github.com/stripe/stripe-go/charge"
+	"github.com/stripe/stripe-go/customer"
 	"github.com/stripe/stripe-go/sub"
 	"github.com/theinvincible/ecommerce-backend/models"
 )
@@ -148,4 +149,17 @@ func CreateSubscription(customerID, planID string) (*stripe.Subscription, error)
 	}
 
 	return sub.New(subParams)
+}
+
+// This creates a new customer in Stripe
+
+func CreateCustomer(email, name string) (*stripe.Customer, error) {
+	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+
+	customerParams := &stripe.CustomerParams{
+		Email: stripe.String(email),
+		Name:  stripe.String(name),
+	}
+
+	return customer.New(customerParams)
 }
