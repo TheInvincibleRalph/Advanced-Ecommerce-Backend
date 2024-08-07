@@ -43,6 +43,12 @@ func main() {
 	router.HandleFunc("/api/v1/categories/{id}", handlers.UpdateCategory).Methods("PUT")
 	router.HandleFunc("/api/v1/categories/{id}", handlers.DeleteCategory).Methods("DELETE")
 
+	// Cart routes
+	router.HandleFunc("/api/v1/cart", handlers.CreateCart).Methods("POST")
+	router.HandleFunc("/api/v1/cart/{id}", handlers.GetCart).Methods("GET")
+	router.HandleFunc("/api/v1/cart/{id}", handlers.UpdateCart).Methods("PUT")
+	router.HandleFunc("/api/v1/cart/{id}", handlers.DeleteCart).Methods("DELETE")
+
 	config.ConnectDatabase()
 	fmt.Println("Server is running on port 8000")
 	http.ListenAndServe(":8080", router)

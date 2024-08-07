@@ -2,12 +2,13 @@ package utils
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 )
 
-var jwtSecret = []byte("4Sjuago52SaBZXHOO+p98td6DHOEle5Kt7jVtXQJopU=")
+var jwtSecret = []byte(os.Getenv("JWT_SECRET_KEY"))
 
 type Claims struct {
 	Role string `json:"role"`
