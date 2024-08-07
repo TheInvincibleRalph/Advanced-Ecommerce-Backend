@@ -22,8 +22,8 @@ type Profile struct {
 	State                   string    `json:"state"`
 	ZipCode                 string    `json:"zip_code"`
 	Country                 string    `json:"country"`
-	LastLogin               string    `json:"last_login"`
-	DateOfBirth             string    `json:"date_of_birth"`
+	LastLogin               time.Time `json:"last_login"`
+	DateOfBirth             time.Time `json:"date_of_birth"`
 	PreferredLanguage       string    `json:"preferred_language"`
 	DateJoined              time.Time `json:"date_joined" gorm:"autoCreateTime"`
 	TwoFactorEnabled        bool      `json:"two_factor_enabled" gorm:"default:false"`

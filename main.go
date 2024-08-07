@@ -49,8 +49,12 @@ func main() {
 	router.HandleFunc("/api/v1/cart/{id}", handlers.UpdateCart).Methods("PUT")
 	router.HandleFunc("/api/v1/cart/{id}", handlers.DeleteCart).Methods("DELETE")
 
+	// Payment routes
+	router.HandleFunc("/api/v1/payment", handlers.PaymentHandler).Methods("POST")
+	router.HandleFunc("/api/v1/webhook", handlers.WebhookHandler).Methods("POST")
+
 	config.ConnectDatabase()
-	fmt.Println("Server is running on port 8000")
-	http.ListenAndServe(":8080", router)
+	fmt.Println("Server is running on port 3000")
+	http.ListenAndServe(":3000", router)
 
 }

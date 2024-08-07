@@ -5,10 +5,18 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/theinvincible/ecommerce-backend/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+}
 
 var DB *gorm.DB
 
@@ -22,21 +30,23 @@ func ConnectDatabase() {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
 		host, user, password, dbname, port)
 
-	DB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	var err error
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	err = DB.AutoMigrate(
+	err = db.AutoMigrate(
+
+		&models.CartItem{},
 		&models.User{},
+		&models.Cart{},
 		&models.BlogPost{},
 		&models.Affliate{},
-		&models.Product{},
 		&models.Category{},
-		&models.Order{},
+		&models.Product{},
 		&models.OrderItem{},
-		&models.Cart{},
-		&models.CartItem{},
+		&models.Order{},
 		&models.Payment{},
 		&models.Tag{},
 		&models.Inventory{},

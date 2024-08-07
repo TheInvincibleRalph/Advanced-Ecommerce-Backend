@@ -11,8 +11,7 @@ type Product struct {
 	Quantity        int      `json:"quantity" gorm:"not null"`
 	Image           string   `json:"image" gorm:"not null"`
 	CategoryID      int      `json:"category_id" gorm:"not null"`
-	Category        Category `json:"category" gorm:"foreignKey:CategoryID,index,constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
-	InStock         bool     `json:"instock" gorm:"-"`
+	Category        Category `json:"category" gorm:"foreignKey:CategoryID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
 	Discount        float64  `json:"discount,omitempty" gorm:"type:decimal(10,2)"`
 	SKU             string   `json:"sku,omitempty" gorm:"unique;not null"`
 	Brand           string   `json:"brand,omitempty" gorm:"index"`

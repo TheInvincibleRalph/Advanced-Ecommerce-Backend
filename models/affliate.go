@@ -9,5 +9,6 @@ type Affliate struct {
 	ReferralCode   string  `json:"referral_code" gorm:"unique;not null"`
 	CommissionRate float64 `json:"commission_rate" gorm:"not null"`
 	Active         bool    `json:"active" gorm:"default:true"`
-	Profile        Profile
+	ProfileID      uint    `json:"profile_id" gorm:"not null"`
+	Profile        Profile `gorm:"foreignkey:ProfileID"`
 }

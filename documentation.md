@@ -1393,6 +1393,17 @@ func (c Client) Cancel(id string, params *stripe.SubscriptionCancelParams) (*str
     }
     ```
 
+## On Trial Periods and Cycle Billings
 
+If a subscription is created beyond the trial period, the behavior depends on the `TrialPeriodDays`, `BillingCycleAnchor`, and `ProrationBehavior` settings you configure in your backend logic. Here’s how each aspect affects the subscription lifecycle:
 
+### 1. **Trial Period**
+
+- **Definition:** The `TrialPeriodDays` is the number of days a user gets free access to the subscription before they are billed.
+- **Beyond Trial Period:** If the subscription is started beyond the trial period or if the user tries to activate a subscription after the trial period has expired, they will not receive any free trial days. The user will be billed immediately or on the next billing cycle, depending on the `BillingCycleAnchor` configuration.
+
+### 2. **Billing Cycle Anchor**
+
+- **Definition:** The `BillingCycleAnchor` sets the start date for the billing cycle.
+- **Beyond Trial Period:** If the `BillingCycleAnchor` is set to a date in the future or beyond the trial period, the subscription will start billing from that date. For example, if the anchor is set to the 1st of the next month, the user will be billed on that date regardless of when the subscription was created or if a trial period is included.
 

@@ -15,4 +15,5 @@ type BlogPost struct {
 	Author      User      `json:"author" gorm:"foreignKey:AuthorID"`
 	PublishedAt time.Time `json:"published_at"`
 	Tags        []Tag     `json:"tags" gorm:"many2many:blog_post_tags"`
+	TagsID      []int     `json:"tags_id" gorm:"-"`
 }

@@ -3,6 +3,9 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -139,6 +142,18 @@ func CreateSubscription(customerID, planID string) (*stripe.Subscription, error)
 	// Initialize Stripe with secret key
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
+	// Set the billing cycle to start in 30 days (immediately after trial period)
+	trialPeriodDays := int64(30)
+	billingCycleAnchor := time.Now().Add(30 * 24 * time.Hour)
+
+	// Validate parameters
+	if customerID == "" {
+		return nil, errors.New("customerID cannot be empty")
+	}
+	if planID == "" {
+		return nil, errors.New("planID cannot be empty")
+	}
+
 	subParams := &stripe.SubscriptionParams{
 		Customer: stripe.String(customerID),
 		Items: []*stripe.SubscriptionItemsParams{
@@ -146,13 +161,21 @@ func CreateSubscription(customerID, planID string) (*stripe.Subscription, error)
 				Plan: stripe.String(planID),
 			},
 		},
+		TrialPeriodDays:    stripe.Int64(trialPeriodDays),
+		BillingCycleAnchor: stripe.Int64(billingCycleAnchor.Unix()),
 	}
 
-	return sub.New(subParams)
+	// Create the subscription
+	subscription, err := sub.New(subParams)
+	if err != nil {
+		log.Printf("Failed to create subscription: %v", err)
+		return nil, err
+	}
+
+	return subscription, nil
 }
 
 // This creates a new customer in Stripe
-
 func CreateCustomer(email, name string) (*stripe.Customer, error) {
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
@@ -162,4 +185,55 @@ func CreateCustomer(email, name string) (*stripe.Customer, error) {
 	}
 
 	return customer.New(customerParams)
+}
+
+func WebhookHandler(w http.ResponseWriter, r *http.Request) {
+	// Initialize Stripe with secret key
+	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+
+	const MaxBodyBytes = int64(65536)
+	r.Body = http.MaxBytesReader(w, r.Body, MaxBodyBytes)
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error reading request body: %v\n", err)
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
+
+	event := stripe.Event{}
+
+	if err := json.Unmarshal(payload, &event); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to parse webhook body json: %v\n", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Unmarshal the event data into an appropriate struct depending on its Type
+	switch event.Type {
+	case "payment_intent.succeeded":
+		var paymentIntent stripe.PaymentIntent
+		err := json.Unmarshal(event.Data.Raw, &paymentIntent)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error parsing webhook JSON: %v\n", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		// Then define and call a func to handle the successful payment intent.
+		// handlePaymentIntentSucceeded(paymentIntent)
+	case "payment_method.attached":
+		var paymentMethod stripe.PaymentMethod
+		err := json.Unmarshal(event.Data.Raw, &paymentMethod)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error parsing webhook JSON: %v\n", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		// Then define and call a func to handle the successful attachment of a PaymentMethod.
+		// handlePaymentMethodAttached(paymentMethod)
+	// ... handle other event types
+	default:
+		fmt.Fprintf(os.Stderr, "Unhandled event type: %s\n", event.Type)
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
