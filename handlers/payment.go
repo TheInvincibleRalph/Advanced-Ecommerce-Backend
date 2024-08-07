@@ -84,16 +84,25 @@ func PaymentHandler(w http.ResponseWriter, r *http.Request) {
 		for i := 0; i < maxRetries; i++ {
 			ch, err = charge.New(chargeParams)
 			if err != nil {
-				log.Printf("Stripe charge creation failed: %v", err)
-				time.Sleep(2 * time.Second)
-				continue
+				if stripeErr, ok := err.(*stripe.Error); ok {
+					// Retry on certain transient errors
+					if stripeErr.Type == stripe.ErrorTypeAPIConnection || stripeErr.Code == "lock_timeout" {
+						log.Printf("Transient error: %v. Retrying...", err)
+						time.Sleep(2 * time.Second)
+						continue
+					}
+				}
+				// Send the error to the error channel if not retryable
+				errorChan <- err
+				return
 			}
-			errorChan <- err
+			// If charge is successful, send it to result channel
+			resultChan <- ch
 			return
 		}
-		resultChan <- ch
+		// If all retries are exhausted, send the last error to the error channel
+		errorChan <- err
 	}()
-
 	go func() {
 		wg.Wait()
 		close(resultChan)
