@@ -5,6 +5,7 @@ go 1.22.1
 require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/gorilla/mux v1.8.1
+	github.com/stripe/stripe-go v70.15.0+incompatible
 	golang.org/x/crypto v0.25.0
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.11

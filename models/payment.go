@@ -11,4 +11,5 @@ type Payment struct {
 	Status        string  `json:"status" gorm:"not null"`
 	Order         Order   `json:"order" gorm:"foreignKey:OrderID"`
 	PaymentMethod string  `json:"payment_method" gorm:"not null"`
+	Email         string  `json:"email" gorm:"not null"`
 }
