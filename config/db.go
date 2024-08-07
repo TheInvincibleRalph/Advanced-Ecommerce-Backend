@@ -18,7 +18,7 @@ func init() {
 	}
 }
 
-var DB *gorm.DB
+var db *gorm.DB
 
 func ConnectDatabase() {
 	host := os.Getenv("DB_HOST")
@@ -34,7 +34,9 @@ func ConnectDatabase() {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
+		return
 	}
+	fmt.Println("Database connection successful")
 
 	err = db.AutoMigrate(
 

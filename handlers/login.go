@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/theinvincible/ecommerce-backend/config"
 	"github.com/theinvincible/ecommerce-backend/models"
 	"github.com/theinvincible/ecommerce-backend/utils"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
-var db = config.DB
+var db *gorm.DB
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
