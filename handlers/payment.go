@@ -78,13 +78,19 @@ func PaymentHandler(w http.ResponseWriter, r *http.Request) {
 		// Prevents or handles duplicate charges gracefully
 		chargeParams.IdempotencyKey = stripe.String(paymentRequest.TransactionID)
 
-		// Create the charge
-		ch, err := charge.New(chargeParams)
-		if err != nil {
+		// Retry logic in case of failure
+		maxRetries := 3
+		var ch *stripe.Charge
+		for i := 0; i < maxRetries; i++ {
+			ch, err = charge.New(chargeParams)
+			if err != nil {
+				log.Printf("Stripe charge creation failed: %v", err)
+				time.Sleep(2 * time.Second)
+				continue
+			}
 			errorChan <- err
 			return
 		}
-
 		resultChan <- ch
 	}()
 

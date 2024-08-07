@@ -1126,3 +1126,182 @@ go func() {
 
 By placing the `IdempotencyKey` correctly, you ensure that your payment system is robust against duplicate charges, enhancing reliability and user experience.
 
+
+
+## Updated code with Retry logic
+
+```go
+func PaymentHandler(w http.ResponseWriter, r *http.Request) {
+	var paymentRequest models.Payment
+	var shipping models.Shipping
+
+	// Parse the JSON request body
+	err := json.NewDecoder(r.Body).Decode(&paymentRequest)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	// Initialize Stripe with secret key
+	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+
+	// Convert amount to cents
+	amountInCents := int64(paymentRequest.Amount * 100)
+
+	// Create a context with timeout
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	// Create a wait group to wait for all goroutines to finish
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	// Channel to receive the charge result
+	resultChan := make(chan *stripe.Charge)
+	errorChan := make(chan error)
+
+	go func() {
+		defer wg.Done()
+		// Create charge parameters
+		chargeParams := &stripe.ChargeParams{
+			Amount:      stripe.Int64(amountInCents),
+			Currency:    stripe.String("usd"),
+			Description: stripe.String("Charge for order " + strconv.Itoa(paymentRequest.OrderID)),
+		}
+
+		// Add email for receipt
+		chargeParams.ReceiptEmail = stripe.String(paymentRequest.Email)
+
+		// Add metadata to charge parameters
+		chargeParams.AddMetadata("order_id", strconv.Itoa(paymentRequest.OrderID))
+		chargeParams.AddMetadata("transaction_id", paymentRequest.TransactionID)
+		chargeParams.AddMetadata("payment_method", paymentRequest.PaymentMethod)
+
+		// Add shipping details to metadata (for physical goods)
+		chargeParams.AddMetadata("shipping_carrier", shipping.Carrier)
+		chargeParams.AddMetadata("tracking_number", shipping.TrackingNumber)
+		chargeParams.AddMetadata("shipping_method", shipping.ShippingMethod)
+		chargeParams.AddMetadata("shipping_cost", strconv.FormatFloat(shipping.ShippingCost, 'f', 2, 64))
+		chargeParams.AddMetadata("estimated_delivery", shipping.EstimatedDelivery.String())
+		chargeParams.AddMetadata("shipping_date", shipping.ShippingDate)
+		chargeParams.AddMetadata("shipping_type", shipping.ShippingType)
+		chargeParams.AddMetadata("shipping_address", shipping.ShippingAddress)
+		chargeParams.AddMetadata("shipping_city", shipping.ShippingCity)
+		chargeParams.AddMetadata("shipping_state", shipping.ShippingState)
+		chargeParams.AddMetadata("shipping_zip_code", shipping.ShippingZipCode)
+		chargeParams.AddMetadata("shipping_country", shipping.ShippingCountry)
+
+		// Prevents or handles duplicate charges gracefully
+		chargeParams.IdempotencyKey = stripe.String(paymentRequest.TransactionID)
+
+		// Retry logic in case of failure
+		maxRetries := 3
+		var ch *stripe.Charge
+		for i := 0; i < maxRetries; i++ {
+			ch, err = charge.New(chargeParams)
+			if err != nil {
+				log.Printf("Stripe charge creation failed: %v", err)
+				time.Sleep(2 * time.Second)
+				continue
+			}
+			errorChan <- err
+			return
+		}
+		resultChan <- ch
+        return
+	}()
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+		close(errorChan)
+	}()
+
+	select {
+	case ch := <-resultChan:
+		// Update payment status and transaction ID
+		paymentRequest.Status = ch.Status
+		paymentRequest.TransactionID = ch.ID
+
+		// Respond with the charge details
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(ch)
+
+	case err := <-errorChan:
+		log.Printf("Stripe charge creation failed: %v", err)
+		http.Error(w, "Payment processing failed", http.StatusInternalServerError)
+
+	case <-ctx.Done():
+		log.Printf("Request timed out")
+		http.Error(w, "Request timed out", http.StatusRequestTimeout)
+	}
+
+}
+```
+
+
+## Stripe's Built-in charge.New Function
+
+### Function Definition
+- `charge.New(chargeParams *stripe.ChargeParams) (*stripe.Charge, error)`
+
+### Parameters
+- **`chargeParams`**: This is a pointer to a `stripe.ChargeParams` struct. This struct contains all the necessary parameters required to create a charge, such as the amount, currency, description, receipt email, and metadata.
+
+### Returns
+- **`*stripe.Charge`**: If the charge is successfully created, this function returns a pointer to a `stripe.Charge` struct. This struct contains all the details of the created charge, such as the charge ID, status, amount, currency, and metadata.
+- **`error`**: If there is an error while creating the charge, this function returns an error object detailing what went wrong.
+
+### Example Usage
+Here is a simplified example of how `charge.New` is used:
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/stripe/stripe-go/v74"
+	"github.com/stripe/stripe-go/v74/charge"
+)
+
+func main() {
+	// Initialize Stripe with the secret key
+	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+
+	// Create charge parameters
+	chargeParams := &stripe.ChargeParams{
+		Amount:      stripe.Int64(2000), // Amount in cents (e.g., $20.00)
+		Currency:    stripe.String("usd"),
+		Description: stripe.String("Charge for order 123"),
+		ReceiptEmail: stripe.String("customer@example.com"),
+		Metadata: map[string]string{
+			"order_id":       "123",
+			"payment_method": "card",
+		},
+	}
+
+	// Create the charge
+	ch, err := charge.New(chargeParams)
+	if err != nil {
+		log.Fatalf("Stripe charge creation failed: %v", err)
+	}
+
+	// Print the charge details
+	fmt.Printf("Charge created: %+v\n", ch)
+}
+```
+
+### Real-World Application
+In a real-world e-commerce application, you would use `charge.New` to process payments from customers. Here's how it fits into a typical payment flow:
+
+1. **Customer Places Order**: The customer places an order on the website and proceeds to the checkout page.
+2. **Payment Details Submission**: The customer submits their payment details (e.g., credit card information).
+3. **Backend Payment Processing**: The backend server receives the payment details and prepares the charge parameters.
+4. **Charge Creation**: The server calls `charge.New` with the charge parameters to create the charge on Stripe.
+5. **Error Handling**: If there is an error (e.g., insufficient funds, invalid card), the server handles the error and notifies the customer.
+6. **Success Handling**: If the charge is successful, the server updates the order status, sends a receipt to the customer, and may trigger additional processes like inventory updates or shipping.
+
+This function is crucial for integrating Stripe's payment processing capabilities into your Go-based application, ensuring secure and reliable transactions for your customers.
