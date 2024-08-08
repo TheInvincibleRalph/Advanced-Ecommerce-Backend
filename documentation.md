@@ -1410,3 +1410,8 @@ If a subscription is created beyond the trial period, the behavior depends on th
 ## Libraries Used:
 
 - [Go library for the Stripe API.](https://github.com/stripe/stripe-go)
+
+
+## Discoveries along the way
+
+[Dependency Injection](https://www.jetbrains.com/guide/go/tutorials/dependency_injection_part_one/introduction/)
