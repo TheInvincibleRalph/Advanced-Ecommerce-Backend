@@ -1414,7 +1414,7 @@ If a subscription is created beyond the trial period, the behavior depends on th
 
 ## Discoveries along the way
 
-- [Dependency Injection](https://www.jetbrains.com/guide/go/tutorials/dependency_injection_part_one/introduction/)
+- [Dependency Injection](https://www.jetbrains.com/guide/go/tutorials/dependency_injection_part_one/introduction/). In the `CheckoutHandler` Function (check `checkout.go`), http.HandlerFunc depends on gorm.DB, which is injected into the function. This follows the DI principle where dependencies are provided to an object what it is initialialized.
 
 - I discovered that frontend isn't all about design as I used to imagine (at least in my HTML and CSS constrained mind), there are some logic to it too. Though while the frontend and backend have logic, the nature of that logic is different: the frontend focuses on interaction and presentation (like form validation, responsiveness, data fetching-requesting data from an API and updating the UI without reloading the page, in the case of redirecting a user to a confirmation page upon successful payment.), and the backend focuses on processing and security (like authentication, database interaction, calculations, and security enforcement).
 
