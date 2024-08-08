@@ -1407,3 +1407,6 @@ If a subscription is created beyond the trial period, the behavior depends on th
 - **Definition:** The `BillingCycleAnchor` sets the start date for the billing cycle.
 - **Beyond Trial Period:** If the `BillingCycleAnchor` is set to a date in the future or beyond the trial period, the subscription will start billing from that date. For example, if the anchor is set to the 1st of the next month, the user will be billed on that date regardless of when the subscription was created or if a trial period is included.
 
+## Libraries Used:
+
+- [Go library for the Stripe API.](https://github.com/stripe/stripe-go)

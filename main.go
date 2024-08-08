@@ -12,6 +12,7 @@ import (
 
 func main() {
 	log.Println("Starting server...")
+
 	router := mux.NewRouter()
 
 	//Login routes
@@ -56,8 +57,11 @@ func main() {
 	router.HandleFunc("/api/v1/webhook", handlers.WebhookHandler).Methods("POST")
 
 	log.Println("Connecting to database...")
+
 	config.ConnectDatabase()
+
 	fmt.Println("Server is running on port 3001")
+
 	err := http.ListenAndServe(":3001", router)
 	if err != nil {
 		log.Fatal("Error starting server:", err)
