@@ -1414,4 +1414,211 @@ If a subscription is created beyond the trial period, the behavior depends on th
 
 ## Discoveries along the way
 
-[Dependency Injection](https://www.jetbrains.com/guide/go/tutorials/dependency_injection_part_one/introduction/)
+- [Dependency Injection](https://www.jetbrains.com/guide/go/tutorials/dependency_injection_part_one/introduction/)
+
+- I discovered that frontend isn't all about design as I used to imagine (at least in my HTML and CSS constrained mind), there are some logic to it too. Though while the frontend and backend have logic, the nature of that logic is different: the frontend focuses on interaction and presentation (like form validation, responsiveness, data fetching-requesting data from an API and updating the UI without reloading the page, in the case of redirecting a user to a confirmation page upon successful payment.), and the backend focuses on processing and security (like authentication, database interaction, calculations, and security enforcement).
+
+**Here is what the code that handles the frontend redirection for payment looks like:**
+
+```javascript
+// Example of initiating a payment and receiving confirmation
+function processPayment(orderId, paymentDetails) {
+    // Step 1: Send payment details to the gateway
+    paymentGateway.processPayment(paymentDetails)
+        .then(paymentConfirmation => {
+            // Step 2: On success, send confirmation to backend
+            return fetch(`/order/confirm/${orderId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    paymentId: paymentConfirmation.id,
+                    status: paymentConfirmation.status
+                })
+            });
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'Completed') {
+                // Step 3: Redirect to confirmation page
+                window.location.href = `/order/success/${orderId}`;
+            }
+        })
+        .catch(error => {
+            console.error('Payment or confirmation failed:', error);
+            alert('There was an error processing your payment. Please try again.');
+        });
+}
+```
+
+**Here is how a confirmation page looks like (HTML/CSS):**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+    <style>
+        .confirmation-page {
+            text-align: center;
+            padding: 50px;
+        }
+        .order-details {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="confirmation-page">
+        <h1>Thank You for Your Order!</h1>
+        <p>Your order has been successfully processed.</p>
+        <div class="order-details">
+            <h3>Order Summary</h3>
+            <p>Order ID: #123456</p>
+            <p>Status: Completed</p>
+            <p>Total: $89.99</p>
+            <!-- Additional order details can be listed here -->
+        </div>
+        <a href="/order/history">View Order History</a>
+    </div>
+</body>
+</html>
+```
+
+
+
+# APPLICATION LOGIC
+
+## Design flow from Cart to Order
+
+
+#### 1. **Add Items to Cart**
+- Endpoint: `POST /cart`
+- Input: Product ID, Quantity
+
+- **Purpose**: Allows users to add products to their cart, which is a temporary storage for items they intend to purchase.
+
+- **Workflow**:
+
+  1. **User Interaction**: The user selects a product and specifies the quantity.
+
+  2. **Backend Processing**:
+     - Validate the product ID and ensure it exists.
+     - Check if the specified quantity is available.
+     - Add the product to the cart, or update the quantity if it already exists in the cart.
+
+  3. **Data Storage**: The cart information is stored in the database, associated with the user's session or account.
+
+#### 2. **View Cart**
+
+- Endpoint: `GET /cart`
+- Input: User ID
+
+- **Purpose**: Allows users to review the items in their cart before proceeding to checkout.
+
+- **Workflow**:
+
+  1. **User Interaction**: The user requests to view their cart.
+
+  2. **Backend Processing**:
+     - Retrieve the list of items in the user's cart from the database.
+     - Calculate the subtotal for each item and the total for the cart.
+
+  3. **Data Presentation**: The cart details (product names, quantities, prices, and total cost) are returned to the user.
+
+#### 3. **Checkout**
+
+- Endpoint: `POST /checkout`
+- Input: User ID
+
+- **Purpose**: Transforms the cart into a formal order, preparing it for payment.
+
+- **Workflow**:
+
+  1. **User Interaction**: The user initiates the checkout process.
+  2. **Backend Processing**:
+     - Retrieve the cart items from the database.
+     - Validate the availability of items and recalculate the total cost.
+     - Create a new order record in the database with status "Pending".
+     - Transfer the items from the cart to the order and clear the cart.
+
+  3. **Data Storage**: The order is saved in the database, and the cart is emptied.
+
+#### 4. **Payment Processing**
+
+- Endpoint: `POST /payment`
+- Input: Order ID, payment token
+
+- **Purpose**: Handles the payment for the order using a payment gateway.
+
+- **Workflow**:
+
+  1. **User Interaction**: The user provides payment details (e.g., credit card information).
+
+  2. **Backend Processing**:
+     - Integrate with a payment gateway (e.g., Stripe) to process the payment.
+     - Handle payment responses:
+       - If successful, update the order status to "Paid" or "Completed".
+       - If unsuccessful, notify the user of the failure and allow them to retry.
+
+  3. **Data Storage**: The payment status and transaction details are stored in the database.
+
+#### 5. **Order Confirmation**
+
+- Endpoint: `POST /order/confirm/{orderID}`
+- Input: Order ID
+
+- **Purpose**: Finalizes the order after successful payment and sends confirmation to the user.
+
+- **Workflow**:
+  1. **User Interaction**: The user is redirected to an order confirmation page.
+
+  2. **Backend Processing**:
+     - Retrieve the order by ID.
+     - Update the order status to "Completed".
+     - Optionally, trigger additional actions like sending a confirmation email to the user (using Mailgun or Kafka)
+
+  3. **Data Presentation**: Display order confirmation details to the user and provide a receipt.
+
+
+The process of the frontend receiving confirmation after a successful payment and updating the order status involves several steps. Here’s how it works:
+
+### 1. **Payment Process Flow**
+
+#### Step 1: Initiate Payment
+
+- **Frontend Action**: 
+  - The user enters payment details on the payment page, typically hosted by or embedded from a payment gateway like Stripe.
+  - The frontend submits these details to the payment gateway via a secure API call.
+
+#### Step 2: Payment Gateway Response
+- **Payment Gateway Action**:
+  - The payment gateway processes the payment.
+  - If successful, it returns a confirmation response to the frontend. This response typically includes a payment confirmation ID or status.
+
+#### Step 3: Update Backend (Order Confirmation)
+- **Frontend Action**:
+  - Upon receiving a successful payment response, the frontend sends a `POST` request to the backend's `OrderConfirmationHandler`.
+  - This request typically includes the order ID and payment confirmation details.
+
+#### Step 4: Backend Order Status Update
+- **Backend Action**:
+  - The backend verifies the payment confirmation (optionally).
+  - The backend updates the order status to "Completed" in the database.
+  - The backend might also trigger additional actions, like sending a confirmation email to the user.
+
+### 2. **Frontend Receipt of Confirmation and Redirection**
+
+#### Step 5: Frontend Receives Order Status Update
+- **Frontend Action**:
+  - The backend responds to the frontend's confirmation request with a success message and any relevant order details (e.g., order ID, status).
+  - The frontend processes this response.
+
+#### Step 6: Redirect to Confirmation Page
+- **Frontend Action**:
+  - The frontend redirects the user to an order confirmation page.
+  - This page displays the order summary, payment status, and a "Thank You" message.
+  - The user might also see options for viewing their order history or downloading an invoice.
