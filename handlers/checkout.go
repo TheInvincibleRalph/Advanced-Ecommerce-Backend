@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func checkoutHandler(db *gorm.DB) http.HandlerFunc {
+func CheckoutHandler(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req models.CheckoutRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

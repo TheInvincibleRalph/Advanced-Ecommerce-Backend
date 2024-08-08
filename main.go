@@ -56,6 +56,10 @@ func main() {
 	router.HandleFunc("/api/v1/payment", handlers.PaymentHandler).Methods("POST")
 	router.HandleFunc("/api/v1/webhook", handlers.WebhookHandler).Methods("POST")
 
+	// Checkout routes
+	router.HandleFunc("/api/v1/checkout", handlers.CheckoutHandler(config.DB)).Methods("POST")
+	router.HandleFunc("/api/v1/order/confirm/{orderID}", handlers.OrderConfirmationHandler(config.DB)).Methods("POST")
+
 	log.Println("Connecting to database...")
 
 	config.ConnectDatabase()

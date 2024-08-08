@@ -18,7 +18,7 @@ func init() {
 	}
 }
 
-var db *gorm.DB
+var DB *gorm.DB
 
 func ConnectDatabase() {
 	host := os.Getenv("DB_HOST")
