@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/theinvincible/ecommerce-backend/models"
 	"gorm.io/gorm"
 )
@@ -64,5 +65,28 @@ func checkoutHandler(db *gorm.DB) http.HandlerFunc {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"order_id": order.ID,
 		})
+	}
+}
+
+func OrderConfirmationHandler(db *gorm.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		vars := mux.Vars(r)
+		orderID := vars["orderID"]
+
+		var order models.Order
+		if err := db.First(&order, orderID).Error; err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		order.OrderStatus = "Completed"
+		if err := db.Save(&order).Error; err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(order)
 	}
 }
