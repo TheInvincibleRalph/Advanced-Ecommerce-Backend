@@ -1431,21 +1431,21 @@ If a subscription is created beyond the trial period, the behavior depends on th
         ### Purpose:
         An SDK simplifies the development process by providing everything you need to create applications for a particular platform, such as iOS, Android, or web development frameworks like Firebase or React.
 
-    - Really can't be called a discovery, but well, I ran into an issue with GitHub's secret-catching police (*no jokes*), it is called "GitHub's push protection feature" (*doesn't even sound like a real name*). Basically, what it does is that it scans for secrets (such as API keys, service account credentials, etc.) in commits before allowing them to be pushed to the repository. Apparently, I happended to have a Google Cloud Service Account Credentials in one *utils/serviceAccountKey.json* file (a file I created for Firebase credentials) registered at commit `72f4a6168ecc8f008c818a0378a96da99582c9db`, which is what got me into trouble.
+    Really can't be called a discovery, but well, I ran into an issue with GitHub's **secret-catching police** (*no jokes*), it is called **"GitHub's push protection feature"** (*doesn't even sound like a real name*). Basically, what it does is that it scans for secrets (such as API keys, service account credentials, etc.) in commits before allowing them to be pushed to the repository. Apparently, I happended to have a Google Cloud Service Account Credentials in one *utils/serviceAccountKey.json* file (a file I created for Firebase credentials) registered at commit `72f4a6168ecc8f008c818a0378a96da99582c9db`, which is what got me into trouble.
 
-    To bail myself, I had to search for a solution. THanks to judge co-pilot who came to my rescue. Long story short, I was given a life-or-death card: to choose either to allow secrets to be pushed to my repository by following a URL sent to my terminal, or to remove the secret from my commit history. Well, as a wise kid that I am, I chose life!
+    To bail myself, I had to search for a solution. Thanks to judge co-pilot who came to my rescue. Long story short, I was given a life-or-death card: to choose either to allow secrets to be pushed to my repository by following a URL sent to my terminal, or to remove the secret from my commit history. Well, as a wise kid that I am, I chose life!
 
     So I can either use `git filter-branch` or `git rebase` to undo the commit history. Here is the full command I used:
 
-    `git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch utils/serviceAccountKey.json' --prune-empty --tag-name-filter cat -- --all` to remove the file from the commit history.
+    `git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch utils/serviceAccountKey.json' --prune-empty --tag-name-filter cat -- --all`, to remove the file from the commit history.
 
     Followed by:
 
     `git push -f` (*yes, a forced push!*)
 
-    But then, judge co-pilot gave me a side note, saying: 
+    But then after my bail, judge co-pilot gave me a side note, saying: 
 
-    *Hey boy, you gotta be careful when using `--force` or `f` as it rewrites commit history and can affect dem collaborators! (well, I should look into that in the future) :)*
+    *Hey boy, you gotta be careful when using `--force` or `f` as it rewrites commit history and can affect dem collaborators!* (well, I should look into that in the future) :)
 
 
 **Here is what the code that handles the frontend redirection for payment looks like:**
