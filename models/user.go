@@ -13,4 +13,5 @@ type User struct {
 	Profile      Profile        `json:"profile" gorm:"foreignKey:UserID"`
 	Role         string         `json:"role" gorm:"default:customer"`
 	Notification []Notification `json:"notification" gorm:"foreignKey:UserID"`
+	DeviceToken  string         `json:"device_token"`
 }
