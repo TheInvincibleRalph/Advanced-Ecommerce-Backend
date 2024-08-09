@@ -1445,7 +1445,7 @@ If a subscription is created beyond the trial period, the behavior depends on th
 
     But then after my bail, judge co-pilot gave me a side note, saying: 
 
-    *Hey boy, you gotta be careful when using `--force` or `f` as it rewrites commit history and can affect dem collaborators!* (well, I should look into that in the future) :)
+    *Hey boy, you gotta be careful when using `--force` or `-f` as it rewrites commit history and can affect dem collaborators!* (well, I should look into that in the future) :)
 
 
 **Here is what the code that handles the frontend redirection for payment looks like:**
