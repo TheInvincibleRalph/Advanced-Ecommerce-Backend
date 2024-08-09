@@ -1,14 +1,18 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/messaging"
 	"github.com/gorilla/mux"
 	"github.com/theinvincible/ecommerce-backend/models"
 	"github.com/theinvincible/ecommerce-backend/utils"
+	"google.golang.org/api/option"
 	"gorm.io/gorm"
 )
 
@@ -114,4 +118,49 @@ func getUserByID(db *gorm.DB, userID uint) (*models.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+// InitializeFirebase initializes the Firebase app with the service account key.
+func InitializeFirebase() *firebase.App {
+
+	opt := option.WithCredentialsFile("./ecommerce-backend/utils/serviceAccountKey.json")
+
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		fmt.Println(fmt.Errorf("error initializing app: %v", err))
+	}
+	return app
+}
+
+func SendOrderUpdateNotification(app *firebase.App, token string, title string, body string) error {
+
+	var userID int
+	var orderID string
+
+	token, err := GetDeviceToken(userID)
+	if err != nil {
+		return fmt.Errorf("error getting device token: %v", err)
+	}
+
+	ctx := context.Background()
+	client, err := app.Messaging(ctx)
+	if err != nil {
+		return fmt.Errorf("error getting Messaging client: %v", err)
+	}
+
+	message := &messaging.Message{
+		Notification: &messaging.Notification{
+			Title: "Order Shipping Update",
+			Body:  "Your order #" + orderID + " has been shipped!",
+		},
+		Token: token,
+	}
+
+	response, err := client.Send(ctx, message)
+	if err != nil {
+		return fmt.Errorf("error sending message: %v", err)
+	}
+
+	fmt.Println("Successfully sent message:", response)
+	return nil
 }

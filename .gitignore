@@ -6,6 +6,7 @@
 
 # Output of the go coverage tool
 *.out
+.json
 
 # Dependency directories (remove the comment below to include it)
 vendor/
