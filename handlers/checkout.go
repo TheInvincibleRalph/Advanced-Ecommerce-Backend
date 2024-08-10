@@ -137,7 +137,7 @@ func SendOrderUpdateNotification(app *firebase.App, token string, title string, 
 	var userID int
 	var orderID string
 
-	token, err := GetDeviceToken(userID)
+	Devtoken, err := GetDeviceToken(userID)
 	if err != nil {
 		return fmt.Errorf("error getting device token: %v", err)
 	}
@@ -153,7 +153,7 @@ func SendOrderUpdateNotification(app *firebase.App, token string, title string, 
 			Title: "Order Shipping Update",
 			Body:  "Your order #" + orderID + " has been shipped!",
 		},
-		Token: token,
+		Token: Devtoken,
 	}
 
 	response, err := client.Send(ctx, message)
