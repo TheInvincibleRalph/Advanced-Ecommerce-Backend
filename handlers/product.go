@@ -5,9 +5,12 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"github.com/theinvincible/ecommerce-backend/models"
+	"github.com/theinvincible/ecommerce-backend/utils"
 )
 
 // CreateProduct creates a new product
@@ -101,35 +104,59 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Query the database with pagination, sorting, filtering, and search
-	var products []models.Product
-	query := db.Model(&models.Product{})
-	if category != "" {
-		query = query.Where("category = ?", category)
-	}
-	if minPriceStr != "" {
-		query = query.Where("price >= ?", minPrice)
-	}
-	if maxPriceStr != "" {
-		query = query.Where("price <= ?", maxPrice)
-	}
-	if search != "" {
-		query = query.Where("name ILIKE ?", "%"+search+"%")
-	}
-	query = query.Offset((page - 1) * limit).Limit(limit)
-	if strings.ToLower(order) == "desc" {
-		query = query.Order(sortBy + " desc")
-	} else {
-		query = query.Order(sortBy + " asc")
-	}
-	if err := query.Find(&products).Error; err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// Before querying the database, check if the results are already cached in Redis
+	// If cached, return the results directly.
+	// If not, proceed to fetching from the database, cache the results, and then return them.
 
-	// Return the results
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(products)
+	// First create a unique cache key based on the query parameters
+	cacheKey := "products:" + pageStr + ":" + limitStr + ":" + sortBy + ":" + order + ":" + category + ":" + minPriceStr + ":" + maxPriceStr + ":" + search
+
+	cachedProducts, err := utils.InitRedisClient().Get(cacheKey).Result() //utils.InitRedisClient() returns an instance of a Redis db
+	if err == redis.Nil {
+		// Cache miss, fetch from the database
+		// Query the database with pagination, sorting, filtering, and search
+		var products []models.Product
+		query := db.Model(&models.Product{})
+		if category != "" {
+			query = query.Where("category = ?", category)
+		}
+		if minPriceStr != "" {
+			query = query.Where("price >= ?", minPrice)
+		}
+		if maxPriceStr != "" {
+			query = query.Where("price <= ?", maxPrice)
+		}
+		if search != "" {
+			query = query.Where("name ILIKE ?", "%"+search+"%")
+		}
+		query = query.Offset((page - 1) * limit).Limit(limit)
+		if strings.ToLower(order) == "desc" {
+			query = query.Order(sortBy + " desc")
+		} else {
+			query = query.Order(sortBy + " asc")
+		}
+		if err := query.Find(&products).Error; err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Using Redis to cache the results of our database queries
+		productsJSON, err := json.Marshal(products)
+		if err == nil {
+			utils.InitRedisClient().Set(cacheKey, productsJSON, 10*time.Minute)
+		}
+
+		// Return the result
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(productsJSON)
+	} else if err != nil {
+		// Redis error
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	} else {
+		// Cache hit, return the cached products
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(cachedProducts))
+	}
 }
 
 // GetProduct returns a product by ID
@@ -137,13 +164,36 @@ func GetProduct(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	id := mux.Vars(r)["id"]
-	var product models.Product
-	if err := db.Preload("Category").First(&product, id).Error; err != nil {
-		http.Error(w, "Product not found", http.StatusNotFound)
-		return
-	}
 
-	json.NewEncoder(w).Encode(product)
+	// Try to get the product from cache
+	cacheKey := "product:" + id
+
+	cachedProduct, err := utils.InitRedisClient().Get(cacheKey).Result()
+	if err == redis.Nil {
+		// Cache miss, fetch from the database
+		var product models.Product
+		if err := db.Preload("Category").First(&product, id).Error; err != nil {
+			http.Error(w, "Product not found", http.StatusNotFound)
+			return
+		}
+
+		// Cache the product data
+		productJSON, err := json.Marshal(product)
+		if err == nil {
+			utils.InitRedisClient().Set(cacheKey, productJSON, 10*time.Minute)
+		}
+
+		// Return the result
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(productJSON)
+	} else if err != nil {
+		// Redis error
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	} else {
+		// Cache hit, return the cached product
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(cachedProduct))
+	}
 }
 
 // UpdateProduct updates a product by ID
