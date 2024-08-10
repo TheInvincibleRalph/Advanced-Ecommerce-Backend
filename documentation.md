@@ -2001,7 +2001,7 @@ case err := <-resultChan:
 
 - **HTTP Request Header**:
 
-A request header in HTTP contains key-value pairs that provide information about the request, such as client details, request parameters, and metadata. These headers help the server understand how to process the request. Here are the common components of an HTTP request header:
+A request header in HTTP contains key-value pairs sent by a client to a server as part of an http request. The header provides information about the request, such as client details, request parameters, and metadata. These headers help the server understand how to process the request. Here are the common components of an HTTP request header:
 
 1. **Request Method**: Not part of the header itself, but it defines the action to be performed (e.g., GET, POST, PUT, DELETE).
 
@@ -2047,6 +2047,19 @@ A request header in HTTP contains key-value pairs that provide information about
 15. **If-Modified-Since**: Allows conditional requests, only fetching the resource if it has been modified since the specified date.
     - Example: `If-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT`
 
+#### Examples of Standard HTTP Request Headers
+
+- **`GET /index.html HTTP/1.1`**
+  ```
+  Host: www.example.com
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36
+  Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+  Accept-Language: en-US,en;q=0.5
+  Accept-Encoding: gzip, deflate, br
+  Connection: keep-alive
+  ```
+
+Understanding these components helps in debugging, optimizing performance, and ensuring proper communication between clients and servers.
 
 
 - **Session ID**:
