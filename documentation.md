@@ -1904,7 +1904,7 @@ In an e-commerce backend, Redis will serve as a high-speed cache layer. When use
 - **Cache Hit**: If the data is found in Redis, we return it immediately without querying the database, which reduces load and improves response times.
 
 
-## On Instantaiating Redis DB using Goroutine to handle context
+## On Instantiating Redis DB (plus using Goroutine to handle context)
 
 
 ### Function Definition
