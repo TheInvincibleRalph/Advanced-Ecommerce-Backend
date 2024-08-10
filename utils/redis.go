@@ -11,7 +11,7 @@ import (
 // Intializes a Redis instance
 func InitRedisClient() *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:3003", // Redis server address
+		Addr:     "localhost:6379", // Redis server address
 		Password: "",               // No password set
 		DB:       0,                // Use default DB
 	})
