@@ -1917,14 +1917,14 @@ func InitRedisClient() *redis.Client {
 ### Create Redis Client
 ```go
 rdb := redis.NewClient(&redis.Options{
-    Addr:     "localhost:3001", // Redis server address
+    Addr:     "localhost:3003", // Redis server address
     Password: "",               // No password set
     DB:       0,                // Use default DB
 })
 ```
 - **`redis.NewClient`**: This function creates a new Redis client using the provided options.
 - **Options**:
-  - `Addr`: Specifies the address of the Redis server. In this case, it's `localhost:3001`, meaning it's running on the local machine on port `3001`.
+  - `Addr`: Specifies the address of the Redis server. In this case, it's `localhost:3003`, meaning it's running on the local machine on port `3003`.
   - `Password`: The password for the Redis server is set to an empty string, meaning no password is required.
   - `DB`: Specifies which Redis database to use. The default is `0`.
 
