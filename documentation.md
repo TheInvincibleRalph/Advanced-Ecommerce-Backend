@@ -1997,6 +1997,97 @@ case err := <-resultChan:
 **Latency refers to the time delay between the moment a request is made and the moment a response is received.*
 
 
+### On HTTP Request Header, Session ID and Redis Session Cache
+
+- **HTTP Request Header**:
+
+A request header in HTTP contains key-value pairs that provide information about the request, such as client details, request parameters, and metadata. These headers help the server understand how to process the request. Here are the common components of an HTTP request header:
+
+1. **Request Method**: Not part of the header itself, but it defines the action to be performed (e.g., GET, POST, PUT, DELETE).
+
+2. **Host**: Specifies the domain name or IP address of the server where the request is being sent.
+   - Example: `Host: www.example.com`
+
+3. **User-Agent**: Contains information about the client software, such as the browser or application making the request.
+   - Example: `User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)`
+
+4. **Accept**: Specifies the content types the client can process, such as `text/html`, `application/json`, etc.
+   - Example: `Accept: text/html,application/xhtml+xml,application/xml`
+
+5. **Accept-Encoding**: Indicates the content encoding (e.g., gzip, deflate) that the client can understand.
+   - Example: `Accept-Encoding: gzip, deflate`
+
+6. **Accept-Language**: Specifies the language(s) the client prefers.
+   - Example: `Accept-Language: en-US,en;q=0.9`
+
+7. **Authorization**: Contains credentials for authenticating the request, such as a token or Basic Auth.
+   - Example: `Authorization: Bearer <token>`
+
+8. **Content-Type**: Indicates the MIME type of the body of the request (for POST, PUT requests).
+   - Example: `Content-Type: application/json`
+
+9. **Content-Length**: Specifies the length of the request body in bytes.
+   - Example: `Content-Length: 348`
+
+10. **Cookie**: Sends cookies from the client to the server.
+    - Example: `Cookie: sessionId=abc123; theme=light`
+
+11. **Referer**: Specifies the URL of the page that referred the client to the current resource.
+    - Example: `Referer: https://www.example.com/page`
+
+12. **Connection**: Controls whether the network connection stays open after the current transaction.
+    - Example: `Connection: keep-alive`
+
+13. **Cache-Control**: Directives for caching mechanisms in both requests and responses.
+    - Example: `Cache-Control: no-cache`
+
+14. **X-Requested-With**: Typically used in AJAX requests to identify the request as being made via JavaScript.
+    - Example: `X-Requested-With: XMLHttpRequest`
+
+15. **If-Modified-Since**: Allows conditional requests, only fetching the resource if it has been modified since the specified date.
+    - Example: `If-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT`
+
+
+
+- **Session ID**:
+
+When you implement session management, the `Session-ID` header can be used to pass a session identifier from the client to the server, allowing the server to retrieve the session data associated with that ID (often stored in a database, cache like Redis, or in-memory).
+
+#### Example of a Request Header with `Session-ID`:
+
+```http
+GET /api/resource HTTP/1.1
+Host: www.example.com
+User-Agent: Mozilla/5.0
+Authorization: Bearer <token>
+Session-ID: abc123xyz
+```
+
+In this example, the `Session-ID` header is included along with other headers like `User-Agent` and `Authorization`.
+
+#### How `Session-ID` Works in Practice:
+
+1. **User Logs In**: When a user logs in, the server creates a session and generates a `Session-ID`. This `Session-ID` is sent back to the client, usually as a cookie or in the response body.
+
+2. **Client Stores `Session-ID`**: The client stores the `Session-ID` locally, typically in a cookie or local storage.
+
+3. **Subsequent Requests**: For subsequent requests, the client includes the `Session-ID` in the request header. The server uses this ID to look up the session data (e.g., user info, shopping cart contents) and process the request accordingly.
+
+4. **Session Validation**: The server validates the `Session-ID`, ensuring it corresponds to an active session. If valid, the request proceeds; if not, the server may reject the request or prompt the user to log in again.
+
+In my code, however, JWT, rather than Redis, is handling the each user's session as seen here: 
+
+```go
+RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)), //session expires in 24 hours.
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+			Issuer:    "ecommerce-backend",
+			Subject:   "user",
+			Audience:  jwt.ClaimStrings{"ecommerce-frontend"},
+			ID:        "unique",
+		},
+```
 
 
 glossary.md
