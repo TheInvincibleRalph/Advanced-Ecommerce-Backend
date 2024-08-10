@@ -66,6 +66,13 @@ func main() {
 
 	config.ConnectDatabase()
 
+	// rdbErr := utils.InitRedisClient()
+	// if rdbErr != nil {
+	// 	log.Fatal("Error connecting to Redis:", rdbErr)
+	// } else {
+	// 	log.Println("Connected to Redis successfully!")
+	// }
+
 	fmt.Println("Server is running on port 3001")
 
 	err := http.ListenAndServe(":3001", router)
