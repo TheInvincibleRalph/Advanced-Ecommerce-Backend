@@ -1873,3 +1873,40 @@ Here’s an example of how it all comes together:
 ```
 
 This code will set up Firebase in your web application, using the API key and other configuration details to connect to your Firebase project. Once initialized, you can use Firebase services like Cloud Messaging, Authentication, Firestore, and more in your web app.
+
+
+## On the use of Redis for cache
+
+Redis is an in-memory database that runs on your server or a cloud instance. When you store data in Redis, it is kept in the RAM (Random Access Memory) of the server where Redis is running. This allows for extremely fast read and write operations because accessing data from RAM is much quicker than accessing it from *disk storage.
+
+In an e-commerce backend, Redis will serve as a high-speed cache layer. When users browse your product listings, instead of hitting the database each time, the application will first check Redis. If the data is cached, it will return the cached data almost instantly, reducing *latency and server load. This setup is crucial for handling high traffic and ensuring a smooth user experience.
+
+### How Redis Works:
+
+1. **Centralized Cache**: 
+   - Redis stores data in the server's RAM, meaning that the data is accessible to all users interacting with the application. 
+   - For example, if multiple users request the same product information on an e-commerce platform, Redis can serve this data from its cache rather than querying the database each time. This reduces the load on the database and speeds up response times for all users.
+
+2. **Efficiency and Scalability**:
+   - By caching commonly requested data, Redis reduces the need for repeated database queries, which can be slow and resource-intensive. This is particularly important in a high-traffic environment where many users might be requesting the same or similar data.
+   - Redis can also handle thousands or even millions of requests per second, making it ideal for applications that need to serve a large user base efficiently.
+
+3. **Use Cases**:
+   - **Product Catalog**: In an e-commerce backend, Redis could store a frequently accessed product catalog. When any user searches for or views products, the information is quickly served from Redis rather than querying the database each time.
+   - **Session Management**: Redis can store session data, allowing multiple users to maintain their sessions across different requests. This is common in scenarios where users are frequently logging in and out or interacting with personalized content.
+   - **Rate Limiting**: Redis can be used to track and enforce rate limits across multiple users, ensuring that no single user overwhelms the system.
+
+
+
+
+
+**Disk storage refers to a type of storage medium used to store data persistently on physical disks, such as hard drives (HDDs) or solid-state drives (SSDs). Unlike RAM (Random Access Memory), which is volatile and loses its data when the system is powered off, disk storage retains data even when the system is turned off.*
+
+**Latency refers to the time delay between the moment a request is made and the moment a response is received.*
+
+
+
+
+glossary.md
+architecture.md
+technology.md
