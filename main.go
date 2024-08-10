@@ -60,7 +60,7 @@ func main() {
 	router.HandleFunc("/api/v1/checkout", handlers.CheckoutHandler(config.DB)).Methods("POST")
 	router.HandleFunc("/api/v1/order/confirm/{orderID}", handlers.OrderConfirmationHandler(config.DB)).Methods("POST")
 
-	router.HandleFunc("/api/store-device-token", handlers.StoreTokenHandler).Methods("POST")
+	router.HandleFunc("/api/v1/store-device-token", handlers.StoreTokenHandler).Methods("POST")
 
 	log.Println("Connecting to database...")
 
