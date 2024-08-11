@@ -70,3 +70,34 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }
+
+// from role checking to
+func RoleMiddleware(allowedRoles ...string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Get user from context or session (assuming JWT token-based auth)
+			user, ok := r.Context().Value("user").(*models.User)
+			if !ok {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+				return
+			}
+
+			// Check if the user's role is in the allowedRoles
+			// or checks if the user has the required role. If not, it returns a 403 Forbidden response.
+			allowed := false
+			for _, role := range allowedRoles {
+				if user.Role == role {
+					allowed = true
+					break
+				}
+			}
+
+			if !allowed {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}

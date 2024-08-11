@@ -2106,7 +2106,24 @@ RegisteredClaims: jwt.RegisteredClaims{
 
 ## On Middlewares
 
-Middleware is like a filter that processes requests before they reach the main logic of your application. In web applications, middleware functions can check if a user is logged in, if they have certain permissions, or if the request data is valid. In the context of my code, middleware is applied for RBAC. RBAC which is short for **Role-Based Access Control** restricts access based on roles assigned to users
+Middleware is like a filter that processes requests before they reach the main logic of your application. In web applications, middleware functions can check if a user is logged in, if they have certain permissions, or if the request data is valid. In the context of my code, middleware is applied for RBAC. RBAC which is short for **Role-Based Access Control** restricts access based on roles assigned to users.
+
+### The Middleware Logic from the code:
+
+**Outer Function (RoleMiddleware):****
+
+- Signature: `func RoleMiddleware(allowedRoles ...string) func(http.Handler) http.Handler`
+- Role: This is a middleware generator function. It takes a variadic parameter allowedRoles which specifies the roles that are allowed to access the next handler. It returns a function that takes an http.Handler and returns another `http.Handler`.
+
+**First Return Function:****
+
+- Signature: `func(next http.Handler) http.Handler`
+- Role: This function is the actual middleware. It takes the next handler in the chain (`next http.Handler`) as an argument and returns an `http.Handler`. This allows the middleware to wrap the next handler and perform additional processing before or after calling the next handler.
+
+**Second Return Function:****
+
+- Signature: `http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { ... })`
+- Role: This function is the core of the middleware logic. It is an `http.HandlerFunc` that takes an `http.ResponseWriter` and an `http.Request` as arguments. Inside this function, you can implement the middleware logic, such as checking user roles, logging, or modifying the request/response. After performing the middleware logic, it can call `next.ServeHTTP(w, r)` to pass control to the next handler in the chain.
 
 
 
