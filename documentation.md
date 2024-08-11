@@ -2103,6 +2103,27 @@ RegisteredClaims: jwt.RegisteredClaims{
 ```
 
 
+
+## On Middlewares
+
+Middleware is like a filter that processes requests before they reach the main logic of your application. In web applications, middleware functions can check if a user is logged in, if they have certain permissions, or if the request data is valid. In the context of my code, middleware is applied for RBAC. RBAC which is short for **Role-Based Access Control** restricts access based on roles assigned to users
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 glossary.md
 architecture.md
 technology.md
