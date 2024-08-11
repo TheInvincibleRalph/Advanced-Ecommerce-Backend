@@ -1447,6 +1447,35 @@ If a subscription is created beyond the trial period, the behavior depends on th
 
     *Hey boy, you gotta be careful when using `--force` or `-f` as it rewrites commit history and can affect dem collaborators!* (well, I should look into that in the future) :)
 
+- I decided to try open source contribution out, thanks to [firstcontributions community](https://github.com/firstcontributions/first-contributions/tree/main) where I learnt the *fork -> clone -> edit -> pull request* workflow of a contributor, also making my first contribution in the process. Due to the thrill of becoming a newbie contributor, I didn't stop there. I tried to find other projects I could contribute to in the little way I can. I found this project: [chew](https://github.com/mmatongo/chew) in the process and volunteered to write test cases for them, and lucky, I was assigned to do that even without having learnt testing, but I know the process will make me learn it.
+
+- In the process of researching for my task at Chew, I got to know MIME. MIME (Multipurpose Internet Mail Extensions) is a standard used to define the type of content being transmitted over the internet.
+
+
+    MIME (Multipurpose Internet Mail Extensions) is a standard used to define the type of content being transmitted over the internet. It was originally developed to extend the format of email messages to support text in character sets other than ASCII, as well as attachments like images, audio, video, and application files.
+
+    ### MIME Type Structure
+
+    A MIME type is composed of two parts: a **type** and a **subtype**, separated by a slash (`/`). For example:
+    - `text/html`
+    - `application/pdf`
+    - `image/png`
+
+    - **Type**: The general category of the data, such as `text`, `image`, `audio`, `video`, `application`, etc.
+    - **Subtype**: The specific format within that category, such as `html`, `plain`, `pdf`, `json`, etc.
+
+
+    ### Example of MIME Type Usage
+
+    When an application or function makes an HTTP request and receives a response, the response header will typically include a `Content-Type` field. This field tells your application what type of data is being returned. For example:
+
+    ```http
+    Content-Type: text/html
+    ```
+
+
+
+
 
 **Here is what the code that handles the frontend redirection for payment looks like:**
 

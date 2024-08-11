@@ -62,6 +62,13 @@ func main() {
 
 	router.HandleFunc("/api/v1/store-device-token", handlers.StoreTokenHandler).Methods("POST")
 
+	// MIddleware routes
+	// Example usage for different roles
+	// router.HandleFunc("/admin", AdminHandler).Methods("GET").Middleware(RoleMiddleware("admin"))
+	// router.HandleFunc("/vendor", VendorHandler).Methods("GET").Middleware(RoleMiddleware("vendor"))
+	// router.HandleFunc("/customer", CustomerHandler).Methods("GET").Middleware(RoleMiddleware("customer"))
+	// router.HandleFunc("/dashboard", DashboardHandler).Methods("GET").Middleware(RoleMiddleware("admin", "vendor"))
+
 	log.Println("Connecting to database...")
 
 	config.ConnectDatabase()
