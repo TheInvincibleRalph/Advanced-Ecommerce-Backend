@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
+	"github.com/gorilla/mux"
 	"github.com/theinvincible/ecommerce-backend/models"
 	"github.com/theinvincible/ecommerce-backend/utils"
 )
@@ -73,4 +74,44 @@ func AdminDashboardHandler(w http.ResponseWriter, r *http.Request) {
 	// Return the data as JSON
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(dashboardData)
+}
+
+// <=============================================User Management=============================================>
+
+func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
+	var users []models.User
+	if err := db.Find(&users).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
+}
+
+func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
+	var user models.User
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	if err := db.Save(&user).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "User updated successfully"})
+}
+
+func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	if err := db.Delete(&models.User{}, id).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "User deleted successfully"})
 }
