@@ -1473,6 +1473,65 @@ If a subscription is created beyond the trial period, the behavior depends on th
     Content-Type: text/html
     ```
 
+- I learnt about `sync.Once` type in Go: `sync.Once` is a type in Go's standard library that ensures a particular piece of code is executed only once, no matter how many times it is called. This is particularly useful in scenarios where you need to perform a one-time initialization, like setting up a database connection, loading configuration files, or initializing a singleton instance.
+
+        #### How `sync.Once` Works
+
+        - **Single Execution**: The `Do` method provided by `sync.Once` guarantees that the function passed to it will be executed only once, even if `Do` is called from multiple goroutines.
+        - **Thread-Safe**: The execution of the function is thread-safe, meaning that no two goroutines can execute the function simultaneously.
+
+        #### Example Usage
+
+        Imagine you have a function that initializes a configuration file. You want to make sure this function runs only once in the entire lifetime of your application.
+
+        ```go
+        package main
+
+        import (
+            "fmt"
+            "sync"
+        )
+
+        var once sync.Once
+
+        func loadConfig() {
+            fmt.Println("Loading configuration...")
+            // Perform the actual configuration loading here
+        }
+
+        func main() {
+            for i := 0; i < 3; i++ {
+                go func() {
+                    once.Do(loadConfig)
+                }()
+            }
+
+            // Wait for the goroutines to finish (for demonstration purposes)
+            var wg sync.WaitGroup
+            wg.Add(1)
+            wg.Wait()
+        }
+        ```
+
+        #### Breakdown:
+
+        - **sync.Once Variable**: `once` is a variable of type `sync.Once`.
+        - **Do Method**: The `Do` method is called with the `loadConfig` function. No matter how many times `Do(loadConfig)` is called, the `loadConfig` function will only execute once.
+        - **Thread-Safety**: If you run this code, "Loading configuration..." will be printed only once, even though `loadConfig` is called multiple times across different goroutines.
+
+        #### Practical Use Cases
+
+        1. **Singleton Pattern**: Ensuring that an instance of an object is created only once.
+        2. **Lazy Initialization**: Delaying the initialization of an expensive resource until it's needed, and ensuring it happens only once.
+        3. **Global Configuration**: Loading or initializing configuration settings for the application only once.
+
+        #### Important Points
+
+        - The function passed to `Do` should not take arguments or return results.
+        - If the function you pass to `Do` panics, it will be considered as having run, and subsequent calls to `Do` will not run it again.
+        - Once the function has been executed, it cannot be reset or undone; it will never run again.
+
+
 
 
 
