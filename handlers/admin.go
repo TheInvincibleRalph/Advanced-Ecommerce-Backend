@@ -160,3 +160,32 @@ func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "Product deleted successfully"})
 }
+
+// <=============================================Order Management=============================================>
+
+func GetOrdersHandler(w http.ResponseWriter, r *http.Request) {
+	var orders []models.Order
+	if err := db.Find(&orders).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(orders)
+}
+
+func UpdateOrderStatusHandler(w http.ResponseWriter, r *http.Request) {
+	var order models.Order
+	if err := json.NewDecoder(r.Body).Decode(&order); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	if err := db.Save(&order).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "Order status updated successfully"})
+}
