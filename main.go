@@ -64,10 +64,10 @@ func main() {
 
 	// MIddleware routes
 	// Example usage for different roles
-	// router.HandleFunc("/admin", AdminHandler).Methods("GET").Middleware(RoleMiddleware("admin"))
-	// router.HandleFunc("/vendor", VendorHandler).Methods("GET").Middleware(RoleMiddleware("vendor"))
-	// router.HandleFunc("/customer", CustomerHandler).Methods("GET").Middleware(RoleMiddleware("customer"))
-	// router.HandleFunc("/dashboard", DashboardHandler).Methods("GET").Middleware(RoleMiddleware("admin", "vendor"))
+	router.HandleFunc("/admin", handlers.AdminHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin"))
+	router.HandleFunc("/vendor", VendorHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("vendor"))
+	router.HandleFunc("/customer", CustomerHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("customer"))
+	router.HandleFunc("/dashboard", DashboardHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin", "vendor"))
 
 	log.Println("Connecting to database...")
 
