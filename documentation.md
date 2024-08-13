@@ -1531,6 +1531,35 @@ If a subscription is created beyond the trial period, the behavior depends on th
         - If the function you pass to `Do` panics, it will be considered as having run, and subsequent calls to `Do` will not run it again.
         - Once the function has been executed, it cannot be reset or undone; it will never run again.
 
+- Thoughts on Unit Testing in Go
+
+> Unit Testing is about making a simulation of what your function *expects as input(s)* to see if it would produce an *expected behaviour* according to the logic of the function. For instance, if your function expects to read from an io.Reader interface, using the `strings.Reader` method, you would create a Reader buffer that takes in a string and pass it (the mock reader you just created) to your function to see it would behave as expected.
+
+Within your test function, you'd need to define what you expect from the function usually in a variable called `expected`.
+
+Using our function that expects an io.Reader as example, the test code would make the following assertions for validation (to test for edge or critical cases)
+
+- **Error Checking**: The test would check if the function returned an error when it wasn't expected. If an error occurred, the test fails with a message.
+- **Length Comparison**: The test would compare the length of the returned chunks with the expected length. If they don’t match, the test fails.
+- **Content Comparison**: The function would iterate over each chunk of output and compares the actual content with the expected content. If any mismatch is found, it logs an error.
+
+The test's edge cases would obviously not be the same for all function. You would have to find *what a good output is* and *what it is not*, that way, you would know any anomaly that would render your function a failure, and test for them.
+
+## Case for `t.Fatalf` and `t.Errorf`
+
+The key difference between `t.Fatalf` and `t.Errorf` in Go’s testing framework lies in how they handle the test execution after an error is encountered.
+
+### **`t.Fatalf`**
+
+- **Purpose**: `t.Fatalf` is used to log an error message and immediately terminate the execution of the current test. The test will fail, and no further code in the test function will be executed.
+- **Use Case**: Use `t.Fatalf` when the error encountered is critical enough that it doesn’t make sense to continue running the rest of the test. This is common in situations where subsequent steps depend on the success of the failed step.
+
+### **`t.Errorf`**
+
+- **Purpose**: `t.Errorf` is used to log an error message but allows the test to continue running. The test will fail, but the remaining code in the test function will still execute. Multiple errors can be logged in a single test function.
+- **Use Case**: Use `t.Errorf` when you want to record an error but continue checking other conditions in the test. This is useful when you want to report multiple issues in one test run, rather than stopping at the first failure.
+
+
 
 
 
