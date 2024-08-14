@@ -1565,7 +1565,7 @@ If a subscription is created beyond the trial period, the behavior depends on th
 
 
 
-**Here is what the code that handles the frontend redirection for payment looks like:**
+### Here is what the code that handles the frontend redirection for payment looks like:
 
 ```javascript
 // Example of initiating a payment and receiving confirmation

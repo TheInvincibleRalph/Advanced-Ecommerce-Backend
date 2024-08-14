@@ -189,3 +189,31 @@ func UpdateOrderStatusHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "Order status updated successfully"})
 }
+
+// <=============================================Role Management=============================================>
+func AssignRoleHandler(w http.ResponseWriter, r *http.Request) {
+	var roleAssignment struct {
+		UserID string `json:"user_id"`
+		Role   string `json:"role"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&roleAssignment); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	var user models.User
+	if err := db.First(&user, roleAssignment.UserID).Error; err != nil {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	user.Role = roleAssignment.Role
+	if err := db.Save(&user).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "Role assigned successfully"})
+}

@@ -7,9 +7,16 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/theinvincible/ecommerce-backend/models"
+	"gorm.io/gorm"
 )
 
-func CreateOrder(w http.ResponseWriter, r *http.Request) {
+func CreateOrderHandler(db *gorm.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		CreateOrder(w, r, db)
+	}
+}
+
+func CreateOrder(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var order models.Order
@@ -24,6 +31,8 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(order)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Order created successfully"})
 }
 
 func GetOrders(w http.ResponseWriter, r *http.Request) {

@@ -33,7 +33,7 @@ func main() {
 	router.HandleFunc("/api/v1/products/{id}", handlers.DeleteProduct).Methods("DELETE")
 
 	// Order routes
-	router.HandleFunc("/api/v1/orders", handlers.CreateOrder).Methods("POST")
+	router.HandleFunc("/api/v1/orders", handlers.CreateOrderHandler(config.DB)).Methods("POST")
 	router.HandleFunc("/api/v1/orders", handlers.GetOrders).Methods("GET")
 	router.HandleFunc("/api/v1/orders/{id}", handlers.GetOrder).Methods("GET")
 	router.HandleFunc("/api/v1/orders/{id}", handlers.UpdateOrder).Methods("PUT")
@@ -74,6 +74,7 @@ func main() {
 	router.HandleFunc("/api/v1/admin/products/{id}", handlers.DeleteProductHandler).Methods("DELETE").Subrouter().Use(handlers.RoleMiddleware("admin"))
 	router.HandleFunc("/api/v1/admin/orders", handlers.GetOrdersHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin"))
 	router.HandleFunc("/api/v1/admin/orders/{id}", handlers.UpdateOrderStatusHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
+	router.HandleFunc("/api/v1/admin/categories", handlers.AssignRoleHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
 
 	router.HandleFunc("/vendor", VendorHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("vendor"))
 	router.HandleFunc("/customer", CustomerHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("customer"))
