@@ -1559,6 +1559,11 @@ If a subscription is created beyond the trial period, the behavior depends on th
 > - **Purpose**: `t.Errorf` is used to log an error message but allows the test to continue running. The test will fail, but the remaining code in the test function will still execute. Multiple errors can be logged in a single test function.
 > - **Use Case**: Use `t.Errorf` when you want to record an error but continue checking other conditions in the test. This is useful when you want to report multiple issues in one test run, rather than stopping at the first failure.
 
+> **On t.Run and Subtests**
+
+> The `t.Run` function in Go is used to define and run subtests within a test function. It allows you to create isolated test cases within a single test function, each with its own name and scope. This is useful for organizing tests, especially when you want to test multiple scenarios or conditions that are related but distinct.
+
+> One benefit of `t.Run` is isolation, which means each subtest runs independently, so if one subtest fails, it doesn't affect others. This makes debugging easier.
 
 
 
