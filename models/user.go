@@ -11,7 +11,13 @@ type User struct {
 	Email        string         `json:"email" gorm:"unique"`
 	UserID       int            `json:"user_id" gorm:"not null"`
 	Profile      Profile        `json:"profile" gorm:"foreignKey:UserID"`
-	Role         string         `json:"role" gorm:"default:customer"`
+	Role         string         `json:"role" gorm:"default:customer"` // can be customer or admin or vendor
 	Notification []Notification `json:"notification" gorm:"foreignKey:UserID"`
 	DeviceToken  string         `json:"device_token"`
+
+	// Vendor-specific fields (optional)
+	CompanyName     string `json:"company_name,omitempty"`
+	BusinessLicense string `json:"business_license,omitempty"`
+	Phone           string `json:"phone,omitempty"`
+	Address         string `json:"address,omitempty"`
 }
