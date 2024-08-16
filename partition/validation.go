@@ -31,6 +31,6 @@ func ValidateUser(user *models.User) error {
 		}
 	}
 
-	// Validation passed
+	// If validation passes
 	return nil
 }
