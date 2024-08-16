@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/theinvincible/ecommerce-backend/config"
 	"github.com/theinvincible/ecommerce-backend/handlers"
+	"github.com/theinvincible/ecommerce-backend/partition"
 )
 
 func main() {
@@ -64,17 +65,17 @@ func main() {
 
 	//<=====================================================MIddleware routes=====================================================>
 
-	router.HandleFunc("/api/v1/admin", handlers.AdminHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin"))
-	router.HandleFunc("/api/v1/admin/dashboard", handlers.AdminDashboardHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin"))
-	router.HandleFunc("/api/v1/admin/users", handlers.GetUsersHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin"))
-	router.HandleFunc("/api/v1/admin/users/{id}", handlers.UpdateUserHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
-	router.HandleFunc("/api/v1/admin/users/{id}", handlers.DeleteUserHandler).Methods("DELETE").Subrouter().Use(handlers.RoleMiddleware("admin"))
-	router.HandleFunc("/api/v1/admin/products", handlers.AddProductHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
-	router.HandleFunc("/api/v1/admin/products/{id}", handlers.UpdateProductHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
-	router.HandleFunc("/api/v1/admin/products/{id}", handlers.DeleteProductHandler).Methods("DELETE").Subrouter().Use(handlers.RoleMiddleware("admin"))
-	router.HandleFunc("/api/v1/admin/orders", handlers.GetOrdersHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin"))
-	router.HandleFunc("/api/v1/admin/orders/{id}", handlers.UpdateOrderStatusHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
-	router.HandleFunc("/api/v1/admin/categories", handlers.AssignRoleHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
+	router.HandleFunc("/api/v1/admin", partition.AdminHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin"))
+	router.HandleFunc("/api/v1/admin/dashboard", partition.AdminDashboardHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin"))
+	router.HandleFunc("/api/v1/admin/users", partition.GetUsersHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin"))
+	router.HandleFunc("/api/v1/admin/users/{id}", partition.UpdateUserHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
+	router.HandleFunc("/api/v1/admin/users/{id}", partition.DeleteUserHandler).Methods("DELETE").Subrouter().Use(handlers.RoleMiddleware("admin"))
+	router.HandleFunc("/api/v1/admin/products", partition.AddProductHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
+	router.HandleFunc("/api/v1/admin/products/{id}", partition.UpdateProductHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
+	router.HandleFunc("/api/v1/admin/products/{id}", partition.DeleteProductHandler).Methods("DELETE").Subrouter().Use(handlers.RoleMiddleware("admin"))
+	router.HandleFunc("/api/v1/admin/orders", partition.GetOrdersHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin"))
+	router.HandleFunc("/api/v1/admin/orders/{id}", partition.UpdateOrderStatusHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
+	router.HandleFunc("/api/v1/admin/categories", partition.AssignRoleHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
 
 	router.HandleFunc("/vendor", VendorHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("vendor"))
 	router.HandleFunc("/customer", CustomerHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("customer"))
