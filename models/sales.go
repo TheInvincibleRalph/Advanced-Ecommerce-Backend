@@ -6,4 +6,5 @@ type Sales struct {
 	ProductID uint    `json:"product_id"`
 	Quantity  uint    `json:"quantity"`
 	Amount    float64 `json:"amount"`
+	Date      string  `json:"date"`
 }
