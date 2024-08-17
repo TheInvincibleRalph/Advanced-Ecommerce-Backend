@@ -1565,6 +1565,12 @@ If a subscription is created beyond the trial period, the behavior depends on th
 
 > One benefit of `t.Run` is isolation, which means each subtest runs independently, so if one subtest fails, it doesn't affect others. This makes debugging easier.
 
+> ### On reflect.DeepEqual
+
+> The reflect.DeepEqual function (from the re flect package) in Go is used to compare two values for deep equality. It checks if two values are deeply identical, meaning that their contents are the same, including nested structures. This function is particularly useful in testing and scenarios where you need to verify that complex data structures are equal. It can handle slices, arrays, maps, structs, and pointers, comparing their contents recursively.
+
+> DeepEqual is commonly used in tests to verify that expected and actual results are identical. It’s useful for comparing complex data structures where manual comparison would be cumbersome.
+
 
 
 
