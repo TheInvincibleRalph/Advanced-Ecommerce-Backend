@@ -76,6 +76,8 @@ func main() {
 	router.HandleFunc("/api/v1/admin/orders", partition.GetOrdersHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin"))
 	router.HandleFunc("/api/v1/admin/orders/{id}", partition.UpdateOrderStatusHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
 	router.HandleFunc("/api/v1/admin/categories", partition.AssignRoleHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
+	router.HandleFunc("/api/v1/createaccount", partition.CreateVendor).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("vendor"))
+	router.HandleFunc("/api/v1/login/{id}", partition.LoginVendor).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("vendor"))
 	router.HandleFunc("/api/v1/vendor/products", partition.AddProduct).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("vendor"))
 	router.HandleFunc("/api/v1/vendor/products/{id}", partition.UpdateProduct).Methods("PUT").Subrouter().Use(handlers.RoleMiddleware("vendor"))
 	router.HandleFunc("/api/v1vendor/products/{id}", partition.DeleteProduct).Methods("DELETE").Subrouter().Use(handlers.RoleMiddleware("vendor"))
