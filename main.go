@@ -31,7 +31,7 @@ func main() {
 	router.HandleFunc("/api/v1/products", handlers.GetProducts).Methods("GET")
 	router.HandleFunc("/api/v1/products/{id}", handlers.GetProduct).Methods("GET")
 	router.HandleFunc("/api/v1/products/{id}", handlers.UpdateProduct).Methods("PUT")
-	router.HandleFunc("/api/v1/products/{id}", handlers.DeleteProduct).Methods("DELETE")
+	// router.HandleFunc("/api/v1/products/{id}", handlers.DeleteProduct(db)).Methods("DELETE")
 
 	// Order routes
 	router.HandleFunc("/api/v1/orders", handlers.CreateOrderHandler(config.DB)).Methods("POST")

@@ -1,10 +1,11 @@
 module github.com/theinvincible/ecommerce-backend
 
-go 1.22.1
+go 1.22.3
+
+toolchain go1.22.6
 
 require (
 	firebase.google.com/go v3.13.0+incompatible
-	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/gorilla/mux v1.8.1
@@ -47,7 +48,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/onsi/gomega v1.34.1 // indirect
-	github.com/pkg/errors v0.8.1 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.49.0 // indirect

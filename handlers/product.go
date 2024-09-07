@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/theinvincible/ecommerce-backend/models"
 	"github.com/theinvincible/ecommerce-backend/utils"
+	"gorm.io/gorm"
 )
 
 // CreateProduct creates a new product
@@ -28,7 +29,58 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(product)
+	// Create the response map
+	response := map[string]interface{}{
+		"message": "Product created successfully",
+		"product": product,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(response)
+	// json.NewEncoder(w).Encode(product)
+}
+
+// ProductService defines the interface for product-related operations.
+type ProductService interface {
+	CreateProduct(product *models.Product) error
+}
+
+// CreateProductHandler handles HTTP requests to create a product.
+func CreateProductHandler(ps ProductService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		var product models.Product
+		if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if err := ps.CreateProduct(&product); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		response := map[string]interface{}{
+			"message": "Product created successfully",
+			"product": product,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(response)
+	}
+}
+
+// ProductServiceImpl is a concrete implementation of ProductService.
+type ProductServiceImpl struct {
+	DB *gorm.DB
+}
+
+// CreateProduct creates a new product in the database.
+func (ps *ProductServiceImpl) CreateProduct(product *models.Product) error {
+	return ps.DB.Create(product).Error
 }
 
 func GetProducts(w http.ResponseWriter, r *http.Request) {
@@ -221,7 +273,7 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteProduct deletes a product by ID
-func DeleteProduct(w http.ResponseWriter, r *http.Request) {
+func DeleteProduct(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	w.Header().Set("Content-Type", "application/json")
 
 	id := mux.Vars(r)["id"]

@@ -6,7 +6,32 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/theinvincible/ecommerce-backend/models"
+	"github.com/theinvincible/ecommerce-backend/partition"
 )
+
+func CreateUser(w http.ResponseWriter, r *http.Request) {
+	var user models.User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	// This calls the validation function before saving the user to the database
+	if err := partition.ValidateUser(&user); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Save user to the database
+	if err := db.Create(&user).Error; err != nil {
+		http.Error(w, "Error creating user", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(user)
+}
 
 // GetUser returns a user by ID
 func GetUser(w http.ResponseWriter, r *http.Request) {

@@ -16,8 +16,8 @@ type User struct {
 	DeviceToken  string         `json:"device_token"`
 
 	// Vendor-specific fields (optional)
-	CompanyName     string `json:"company_name,omitempty"`
-	BusinessLicense string `json:"business_license,omitempty"`
+	CompanyName     string `json:"company_name,omitempty" gorm:"check:company_name <> ''"`
+	BusinessLicense string `json:"business_license,omitempty" gorm:"check:business_license <> ''"` //omitempty is added just in case the customer and vendor is provided with the same form (which is not recommended). However, check constraints are added to ensure that the fields are not empty if the user is a vendor.
 	Phone           string `json:"phone,omitempty"`
 	Address         string `json:"address,omitempty"`
 }
