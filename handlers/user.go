@@ -2,20 +2,25 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/theinvincible/ecommerce-backend/config"
 	"github.com/theinvincible/ecommerce-backend/models"
 	"github.com/theinvincible/ecommerce-backend/partition"
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
+
 	var user models.User
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
+
+	log.Printf("Decoded user: %+v", user)
 
 	// This calls the validation function before saving the user to the database
 	if err := partition.ValidateUser(&user); err != nil {
@@ -24,8 +29,13 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Save user to the database
-	if err := db.Create(&user).Error; err != nil {
+	if err := config.DB.Create(&user).Error; err != nil {
 		http.Error(w, "Error creating user", http.StatusInternalServerError)
+		return
+	}
+
+	if config.DB == nil {
+		http.Error(w, "Database not initialized", http.StatusInternalServerError)
 		return
 	}
 
