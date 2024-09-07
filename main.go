@@ -21,7 +21,8 @@ func main() {
 	router.HandleFunc("/api/v1/login", handlers.Login).Methods("POST")
 
 	// User routes
-	router.HandleFunc("/api/v1/users", handlers.GetUsers).Methods("POST")
+	router.HandleFunc("/api/v1/users", handlers.CreateUser).Methods("POST")
+	router.HandleFunc("/api/v1/users", handlers.GetUsers).Methods("GET")
 	router.HandleFunc("/api/v1/users/{id}", handlers.GetUser).Methods("GET")
 	router.HandleFunc("/api/v1/users/{id}", handlers.UpdateUser).Methods("PUT")
 	router.HandleFunc("/api/v1/users/{id}", handlers.DeleteUser).Methods("DELETE")
@@ -76,9 +77,10 @@ func main() {
 	router.HandleFunc("/api/v1/admin/orders", partition.GetOrdersHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin"))
 	router.HandleFunc("/api/v1/admin/orders/{id}", partition.UpdateOrderStatusHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
 	router.HandleFunc("/api/v1/admin/categories", partition.AssignRoleHandler).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("admin"))
-	router.HandleFunc("/api/v1/createaccount", partition.CreateVendor).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("vendor"))
+
+	router.HandleFunc("/api/v1/vendor", partition.VendorHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("vendor"))
 	router.HandleFunc("/api/v1/login/{id}", partition.LoginVendor).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("vendor"))
-	router.HandleFunc("/api/v1/vendor/products", partition.AddProduct).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("vendor"))
+	router.HandleFunc("/api/v1/vendor/products", partition.AddProduct).Methods("POST").Subrouter().Use(handlers.RoleMiddleware("vendor"))
 	router.HandleFunc("/api/v1/vendor/products/{id}", partition.UpdateProduct).Methods("PUT").Subrouter().Use(handlers.RoleMiddleware("vendor"))
 	router.HandleFunc("/api/v1vendor/products/{id}", partition.DeleteProduct).Methods("DELETE").Subrouter().Use(handlers.RoleMiddleware("vendor"))
 	router.HandleFunc("/api/v1/vendor/orders", partition.GetOrders).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("vendor"))

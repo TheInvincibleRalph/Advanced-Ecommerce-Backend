@@ -23,8 +23,26 @@ Key Features for the Vendor Handlers:
 
 */
 
+func VendorMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Get user from context or session (assuming JWT token-based auth)
+		user, ok := r.Context().Value("user").(*models.User)
+		if !ok || user.Role != "vendor" {
+			http.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func VendorHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "Welcome, Vendor!"})
+}
+
 // Vendor registration handler
 func CreateVendor(w http.ResponseWriter, r *http.Request) {
+
 	w.Header().Set("Content-Type", "application/json")
 
 	var vendor models.User
