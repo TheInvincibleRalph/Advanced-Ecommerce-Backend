@@ -10,5 +10,5 @@ type Review struct {
 	Rating    int     `json:"rating" gorm:"not null"`
 	Comment   string  `json:"comment" gorm:"not null"`
 	Product   Product `json:"product" gorm:"foreignKey:ProductID"`
-	User      User    `json:"user" gorm:"foreignKey:UserID"`
+	User      User    `json:"user" gorm:"foreignKey:UserID;references:ID"`
 }
