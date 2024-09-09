@@ -30,7 +30,7 @@ func StoreTokenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Store the device token
-	err = UpdateDeviceToken(req.UserID, req.DeviceToken)
+	err = UpdateDeviceToken(req.ID, req.DeviceToken)
 	if err != nil {
 		http.Error(w, "Failed to store token", http.StatusInternalServerError)
 		return
