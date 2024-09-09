@@ -8,7 +8,6 @@ import (
 
 type Shipping struct {
 	gorm.Model
-	ID                int       `json:"id" gorm:"primary_key,auto_increment"`
 	OrderID           int       `json:"order_id" gorm:"not null"`
 	Carrier           string    `json:"carrier" gorm:"not null"`
 	TrackingNumber    string    `json:"tracking_number" gorm:"unique"`

@@ -4,7 +4,6 @@ import "gorm.io/gorm"
 
 type Review struct {
 	gorm.Model
-	ID        int     `json:"id" gorm:"primary_key,auto_increment"`
 	ProductID int     `json:"product_id" gorm:"not null"`
 	UserID    int     `json:"user_id" gorm:"not null"`
 	Rating    int     `json:"rating" gorm:"not null"`

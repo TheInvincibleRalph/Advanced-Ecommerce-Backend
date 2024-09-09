@@ -4,7 +4,6 @@ import "gorm.io/gorm"
 
 type Notification struct {
 	gorm.Model
-	ID        int     `json:"id"`
 	UserID    int     `json:"user_id"`
 	ProductID int     `json:"product_id"`
 	IsRead    bool    `json:"is_read"`

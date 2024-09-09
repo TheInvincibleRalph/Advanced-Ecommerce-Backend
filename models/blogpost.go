@@ -8,7 +8,6 @@ import (
 
 type BlogPost struct {
 	gorm.Model
-	ID          int       `json:"id" gorm:"primary_key,auto_increment"`
 	Title       string    `json:"title" gorm:"not null"`
 	Content     string    `json:"content" gorm:"not null"`
 	AuthorID    int       `json:"author_id" gorm:"not null"`

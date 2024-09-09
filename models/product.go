@@ -4,7 +4,6 @@ import "gorm.io/gorm"
 
 type Product struct {
 	gorm.Model
-	ID              uint     `json:"id" gorm:"primary_key,auto_increment"`
 	Name            string   `json:"name" gorm:"not null,index"`
 	Description     string   `json:"description" gorm:"not null"`
 	Price           float64  `json:"price" gorm:"not null,index"`

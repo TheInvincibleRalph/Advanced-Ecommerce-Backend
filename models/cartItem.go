@@ -4,7 +4,6 @@ import "gorm.io/gorm"
 
 type CartItem struct {
 	gorm.Model
-	ID        int     `json:"id" gorm:"primary_key,auto_increment"`
 	CartID    int     `json:"cart_id" gorm:"not null"`
 	ProductID int     `json:"product_id" gorm:"not null"`
 	Quantity  int     `json:"quantity" gorm:"not null"`
