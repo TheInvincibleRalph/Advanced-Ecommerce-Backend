@@ -12,7 +12,13 @@ import (
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
+	// Check if database is initialized
+	if config.DB == nil {
+		http.Error(w, "Database not initialized", http.StatusInternalServerError)
+		return
+	}
 
+	// Decode the JSON request body into the user struct
 	var user models.User
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
@@ -22,23 +28,20 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Decoded user: %+v", user)
 
-	// This calls the validation function before saving the user to the database
+	// Validate the user (assuming partition.ValidateUser validates user fields)
 	if err := partition.ValidateUser(&user); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Save user to the database
+	// Save the user to the database
 	if err := config.DB.Create(&user).Error; err != nil {
+		log.Printf("Error creating user: %v", err)
 		http.Error(w, "Error creating user", http.StatusInternalServerError)
 		return
 	}
 
-	if config.DB == nil {
-		http.Error(w, "Database not initialized", http.StatusInternalServerError)
-		return
-	}
-
+	// Respond with created status and the user data
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(user)
 }

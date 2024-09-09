@@ -39,7 +39,6 @@ func ConnectDatabase() {
 	fmt.Println("Database connection successful")
 
 	err = DB.AutoMigrate(
-
 		&models.CartItem{},
 		&models.User{},
 		&models.Cart{},
@@ -47,18 +46,43 @@ func ConnectDatabase() {
 		&models.Affliate{},
 		&models.Category{},
 		&models.Product{},
-		&models.OrderItem{},
-		&models.Order{},
 		&models.Payment{},
+		&models.Shipping{},
+		&models.Order{},
+		&models.OrderItem{},
 		&models.Tag{},
 		&models.Inventory{},
 		&models.Review{},
 		&models.Profile{},
-		&models.Shipping{},
 		&models.Notification{},
 	)
 
 	if err != nil {
 		log.Fatalf("Failed to migrate database schema: %v", err)
 	}
+
 }
+
+// func ReinitializeDatabase() {
+// err := DB.Migrator().DropTable(
+// 	&models.CartItem{},
+// 	&models.User{},
+// 	&models.Cart{},
+// 	&models.BlogPost{},
+// 	&models.Affliate{},
+// 	&models.Category{},
+// 	&models.Product{},
+// 	&models.OrderItem{},
+// 	&models.Order{},
+// 	&models.Payment{},
+// 	&models.Tag{},
+// 	&models.Inventory{},
+// 	&models.Review{},
+// 	&models.Profile{},
+// 	&models.Shipping{},
+// 	&models.Notification{},
+// )
+// if err != nil {
+// 	log.Fatal("Error dropping tables:", err)
+// }
+// }

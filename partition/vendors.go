@@ -102,7 +102,7 @@ func LoginVendor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := utils.GenerateJWT(existingVendor.ID)
+	token, err := utils.GenerateJWT(existingVendor.UserID)
 	if err != nil {
 		http.Error(w, "Error generating token", http.StatusInternalServerError)
 		return

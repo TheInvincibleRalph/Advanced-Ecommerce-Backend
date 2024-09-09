@@ -12,8 +12,18 @@ import (
 )
 
 func main() {
-	log.Println("Starting server...")
 
+	log.Println("Connecting to database...")
+	config.ConnectDatabase()
+
+	// config.ReinitializeDatabase()
+
+	// Check if the database connection is established
+	if config.DB == nil {
+		log.Fatal("Database connection failed")
+	}
+
+	// Set up router
 	router := mux.NewRouter()
 
 	//Login routes
@@ -90,10 +100,6 @@ func main() {
 	// router.HandleFunc("/customer", CustomerHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("customer"))
 	// router.HandleFunc("/dashboard", DashboardHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin", "vendor"))
 
-	log.Println("Connecting to database...")
-
-	config.ConnectDatabase()
-
 	// rdbErr := utils.InitRedisClient()
 	// if rdbErr != nil {
 	// 	log.Fatal("Error connecting to Redis:", rdbErr)
@@ -101,10 +107,12 @@ func main() {
 	// 	log.Println("Connected to Redis successfully!")
 	// }
 
-	fmt.Println("Server is running on port 3001")
+	log.Println("Starting server...")
 
 	err := http.ListenAndServe(":3001", router)
 	if err != nil {
 		log.Fatal("Error starting server:", err)
 	}
+	fmt.Println("Server is running on port 3001")
+
 }
