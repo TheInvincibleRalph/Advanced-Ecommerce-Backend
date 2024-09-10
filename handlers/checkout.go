@@ -113,7 +113,7 @@ func OrderConfirmationHandler(db *gorm.DB) http.HandlerFunc {
 }
 
 // getUserByID retrieves a user from the database based on the provided user ID.
-func getUserByID(db *gorm.DB, userID uint) (*models.User, error) {
+func getUserByID(DB *gorm.DB, userID uint) (*models.User, error) {
 	var user models.User
 	if err := config.DB.First(&user, userID).Error; err != nil {
 		return nil, err
