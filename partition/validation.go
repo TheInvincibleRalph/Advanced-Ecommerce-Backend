@@ -2,6 +2,7 @@ package partition
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/theinvincible/ecommerce-backend/models"
@@ -23,14 +24,14 @@ func ValidateUser(user *models.User) error {
 	}
 
 	// Additional validation for vendors
-	// if user.Role == "vendor" {
-	// 	if strings.TrimSpace(user.CompanyName) == "" {
-	// 		return fmt.Errorf("vendor must provide a company name")
-	// 	}
-	// 	if strings.TrimSpace(user.BusinessLicense) == "" {
-	// 		return fmt.Errorf("vendor must provide a business license")
-	// 	}
-	// }
+	if user.Role == "vendor" {
+		if strings.TrimSpace(user.CompanyName) == "" {
+			return fmt.Errorf("vendor must provide a company name")
+		}
+		if strings.TrimSpace(user.BusinessLicense) == "" {
+			return fmt.Errorf("vendor must provide a business license")
+		}
+	}
 
 	// If validation passes
 	return nil
