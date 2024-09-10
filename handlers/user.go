@@ -52,7 +52,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	id := mux.Vars(r)["id"] // Extract the user ID from the request URL
 	var user models.User
-	if err := db.First(&user, id).Error; err != nil { // Find user by ID
+	if err := config.DB.First(&user, id).Error; err != nil { // Find user by ID
 		http.Error(w, "User not found", http.StatusNotFound) // Handle error if user not found
 		return
 	}
@@ -65,7 +65,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var users []models.User
-	if err := db.Find(&users).Error; err != nil {
+	if err := config.DB.Find(&users).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -79,7 +79,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	id := mux.Vars(r)["id"] // Extract the user ID from the request URL
 	var user models.User
-	if err := db.First(&user, id).Error; err != nil { // Find user by ID
+	if err := config.DB.First(&user, id).Error; err != nil { // Find user by ID
 		http.Error(w, "User not found", http.StatusNotFound) // Handle error if user not found
 		return
 	}
@@ -89,7 +89,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := db.Save(&user).Error; err != nil { // Save the updated user information to the database
+	if err := config.DB.Save(&user).Error; err != nil { // Save the updated user information to the database
 		http.Error(w, err.Error(), http.StatusInternalServerError) // Handle error if saving fails
 		return
 	}
@@ -101,8 +101,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	id := mux.Vars(r)["id"]                                     // Extract the user ID from the request URL
-	if err := db.Delete(&models.User{}, id).Error; err != nil { // Delete the user by ID
+	id := mux.Vars(r)["id"]                                            // Extract the user ID from the request URL
+	if err := config.DB.Delete(&models.User{}, id).Error; err != nil { // Delete the user by ID
 		http.Error(w, err.Error(), http.StatusInternalServerError) // Handle error if deleting fails
 		return
 	}
