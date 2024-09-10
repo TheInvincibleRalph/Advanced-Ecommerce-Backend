@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
+	"github.com/theinvincible/ecommerce-backend/config"
 	"github.com/theinvincible/ecommerce-backend/models"
 	"github.com/theinvincible/ecommerce-backend/utils"
 	"gorm.io/gorm"
@@ -24,7 +25,7 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := db.Create(&product).Error; err != nil {
+	if err := config.DB.Create(&product).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -168,7 +169,7 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 		// Cache miss, fetch from the database
 		// Query the database with pagination, sorting, filtering, and search
 		var products []models.Product
-		query := db.Model(&models.Product{})
+		query := config.DB.Model(&models.Product{})
 		if category != "" {
 			query = query.Where("category = ?", category)
 		}
@@ -224,7 +225,7 @@ func GetProduct(w http.ResponseWriter, r *http.Request) {
 	if err == redis.Nil {
 		// Cache miss, fetch from the database
 		var product models.Product
-		if err := db.Preload("Category").First(&product, id).Error; err != nil {
+		if err := config.DB.Preload("Category").First(&product, id).Error; err != nil {
 			http.Error(w, "Product not found", http.StatusNotFound)
 			return
 		}
@@ -254,7 +255,7 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 
 	id := mux.Vars(r)["id"]
 	var product models.Product
-	if err := db.First(&product, id).Error; err != nil {
+	if err := config.DB.First(&product, id).Error; err != nil {
 		http.Error(w, "Product not found", http.StatusNotFound)
 		return
 	}
@@ -264,7 +265,7 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := db.Save(&product).Error; err != nil {
+	if err := config.DB.Save(&product).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -277,7 +278,7 @@ func DeleteProduct(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	w.Header().Set("Content-Type", "application/json")
 
 	id := mux.Vars(r)["id"]
-	if err := db.Delete(&models.Product{}, id).Error; err != nil {
+	if err := config.DB.Delete(&models.Product{}, id).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

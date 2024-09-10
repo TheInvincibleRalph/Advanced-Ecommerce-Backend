@@ -10,6 +10,7 @@ import (
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/messaging"
 	"github.com/gorilla/mux"
+	"github.com/theinvincible/ecommerce-backend/config"
 	"github.com/theinvincible/ecommerce-backend/models"
 	"github.com/theinvincible/ecommerce-backend/utils"
 	"google.golang.org/api/option"
@@ -26,7 +27,7 @@ func CheckoutHandler(db *gorm.DB) http.HandlerFunc {
 
 		//Fetch cart items for the user
 		var cartItems []models.CartItem
-		db.Where("user_id = ?", req.UserID).Find(&cartItems)
+		config.DB.Where("user_id = ?", req.UserID).Find(&cartItems)
 
 		if len(cartItems) == 0 {
 			http.Error(w, "Cart is empty", http.StatusBadRequest)
@@ -59,13 +60,13 @@ func CheckoutHandler(db *gorm.DB) http.HandlerFunc {
 
 		order.OrderItems = orderItems //populates the OrderItems field of the order struct (which is a placeholder for models.Order) with the orderItems slice.
 
-		if err := db.Create(&order).Error; err != nil { //Saves the order and its associated items to the database.
+		if err := config.DB.Create(&order).Error; err != nil { //Saves the order and its associated items to the database.
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		//Clear cart
-		db.Where("user_id = ?", req.UserID).Delete(&models.CartItem{}) //Deletes all cart items for the user from the database, effectively clearing the user's cart.
+		config.DB.Where("user_id = ?", req.UserID).Delete(&models.CartItem{}) //Deletes all cart items for the user from the database, effectively clearing the user's cart.
 
 		// Prepare order details for email
 		orderDetails := fmt.Sprintf("Order ID: %d\nTotal: $%.2f", order.ID, order.TotalAmount)
@@ -95,13 +96,13 @@ func OrderConfirmationHandler(db *gorm.DB) http.HandlerFunc {
 		orderID := vars["orderID"]
 
 		var order models.Order
-		if err := db.First(&order, orderID).Error; err != nil {
+		if err := config.DB.First(&order, orderID).Error; err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
 		order.OrderStatus = "Completed"
-		if err := db.Save(&order).Error; err != nil {
+		if err := config.DB.Save(&order).Error; err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -114,7 +115,7 @@ func OrderConfirmationHandler(db *gorm.DB) http.HandlerFunc {
 // getUserByID retrieves a user from the database based on the provided user ID.
 func getUserByID(db *gorm.DB, userID uint) (*models.User, error) {
 	var user models.User
-	if err := db.First(&user, userID).Error; err != nil {
+	if err := config.DB.First(&user, userID).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

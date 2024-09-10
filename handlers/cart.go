@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/theinvincible/ecommerce-backend/config"
 	"github.com/theinvincible/ecommerce-backend/models"
 	"gorm.io/gorm"
 )
@@ -19,7 +20,7 @@ func CreateCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := db.Create(&cart).Error; err != nil {
+	if err := config.DB.Create(&cart).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -39,7 +40,7 @@ func GetCart(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve the cart from the database
 	var cart models.Cart
-	if err := db.Preload("Items").Find(&cart, id).Error; err != nil {
+	if err := config.DB.Preload("Items").Find(&cart, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			http.Error(w, "Cart not found", http.StatusNotFound)
 		} else {
@@ -63,7 +64,7 @@ func UpdateCart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var cart models.Cart
-	if err := db.First(&cart, id).Error; err != nil {
+	if err := config.DB.First(&cart, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			http.Error(w, "Cart not found", http.StatusNotFound)
 		} else {
@@ -78,7 +79,7 @@ func UpdateCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//saves the new cart
-	if err := db.Save(&cart).Error; err != nil {
+	if err := config.DB.Save(&cart).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -96,7 +97,7 @@ func DeleteCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := db.Delete(&models.Cart{}, id).Error; err != nil {
+	if err := config.DB.Delete(&models.Cart{}, id).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

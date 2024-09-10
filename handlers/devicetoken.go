@@ -4,17 +4,18 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/theinvincible/ecommerce-backend/config"
 	"github.com/theinvincible/ecommerce-backend/models"
 )
 
 func UpdateDeviceToken(userID int, token string) error {
-	err := db.Model(&models.User{}).Where("id = ?", userID).Update("device_token", token).Error
+	err := config.DB.Model(&models.User{}).Where("id = ?", userID).Update("device_token", token).Error
 	return err
 }
 
 func GetDeviceToken(userID int) (string, error) {
 	var token string
-	err := db.Model(&models.User{}).Where("id = ?", userID).Select("device_token").Scan(&token).Error
+	err := config.DB.Model(&models.User{}).Where("id = ?", userID).Select("device_token").Scan(&token).Error
 	return token, err
 }
 

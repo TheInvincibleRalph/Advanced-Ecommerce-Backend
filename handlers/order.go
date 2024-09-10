@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/theinvincible/ecommerce-backend/config"
 	"github.com/theinvincible/ecommerce-backend/models"
 	"gorm.io/gorm"
 )
@@ -25,7 +26,7 @@ func CreateOrder(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 		return
 	}
 
-	if err := db.Create(&order).Error; err != nil {
+	if err := config.DB.Create(&order).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -81,7 +82,7 @@ func GetOrders(w http.ResponseWriter, r *http.Request) {
 
 	// Query the database with pagination and sorting
 	var orders []models.Order
-	query := db.Model(&models.Order{})
+	query := config.DB.Model(&models.Order{})
 	query = query.Offset((page - 1) * limit).Limit(limit)
 	query = query.Order(sortBy + " " + order)
 	if err := query.Find(&orders).Error; err != nil {
@@ -99,7 +100,7 @@ func GetOrder(w http.ResponseWriter, r *http.Request) {
 
 	id := mux.Vars(r)["id"]
 	var order models.Order
-	if err := db.First(&order, id).Error; err != nil {
+	if err := config.DB.First(&order, id).Error; err != nil {
 		http.Error(w, "Order not found", http.StatusNotFound)
 		return
 	}
@@ -113,7 +114,7 @@ func UpdateOrder(w http.ResponseWriter, r *http.Request) {
 
 	id := mux.Vars(r)["id"]
 	var order models.Order
-	if err := db.First(&order, id).Error; err != nil {
+	if err := config.DB.First(&order, id).Error; err != nil {
 		http.Error(w, "Order not found", http.StatusNotFound)
 		return
 	}
@@ -123,7 +124,7 @@ func UpdateOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := db.Save(&order).Error; err != nil {
+	if err := config.DB.Save(&order).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -135,7 +136,7 @@ func DeleteOrder(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	id := mux.Vars(r)["id"]
-	if err := db.Delete(&models.Order{}, id).Error; err != nil {
+	if err := config.DB.Delete(&models.Order{}, id).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

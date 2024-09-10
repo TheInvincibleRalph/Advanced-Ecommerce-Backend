@@ -4,13 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/theinvincible/ecommerce-backend/config"
 	"github.com/theinvincible/ecommerce-backend/models"
 	"github.com/theinvincible/ecommerce-backend/utils"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
-
-var db *gorm.DB
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -31,7 +29,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	user.Password = string(hashedPassword)
 	user.Role = "customer" // Default role
 
-	if err := db.Create(&user).Error; err != nil {
+	if err := config.DB.Create(&user).Error; err != nil {
 		http.Error(w, "Error creating user", http.StatusInternalServerError)
 		return
 	}
@@ -50,7 +48,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var existingUser models.User
-	if err := db.Where("username = ?", user.Username).First(&existingUser).Error; err != nil {
+	if err := config.DB.Where("username = ?", user.Username).First(&existingUser).Error; err != nil {
 		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
 		return
 	}

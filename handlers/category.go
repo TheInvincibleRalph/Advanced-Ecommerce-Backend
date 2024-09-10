@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/theinvincible/ecommerce-backend/config"
 	"github.com/theinvincible/ecommerce-backend/models"
 )
 
@@ -18,7 +19,7 @@ func CreateCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := db.Create(&category).Error; err != nil {
+	if err := config.DB.Create(&category).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -31,7 +32,7 @@ func GetCategories(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var categories []models.Category
-	if err := db.Preload("Products").Find(&categories).Error; err != nil {
+	if err := config.DB.Preload("Products").Find(&categories).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -44,7 +45,7 @@ func GetCategory(w http.ResponseWriter, r *http.Request) {
 
 	id := mux.Vars(r)["id"]
 	var category models.Category
-	if err := db.Preload("Products").First(&category, id).Error; err != nil {
+	if err := config.DB.Preload("Products").First(&category, id).Error; err != nil {
 		http.Error(w, "Category not found", http.StatusNotFound)
 		return
 	}
@@ -58,7 +59,7 @@ func UpdateCategory(w http.ResponseWriter, r *http.Request) {
 
 	id := mux.Vars(r)["id"]
 	var category models.Category
-	if err := db.First(&category, id).Error; err != nil {
+	if err := config.DB.First(&category, id).Error; err != nil {
 		http.Error(w, "Category not found", http.StatusNotFound)
 		return
 	}
@@ -68,7 +69,7 @@ func UpdateCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := db.Save(&category).Error; err != nil {
+	if err := config.DB.Save(&category).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -81,7 +82,7 @@ func DeleteCategory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	id := mux.Vars(r)["id"]
-	if err := db.Delete(&models.Category{}, id).Error; err != nil {
+	if err := config.DB.Delete(&models.Category{}, id).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
