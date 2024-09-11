@@ -15,6 +15,12 @@ This is an advanced e-commerce backend built with the **Gorilla Mux** router and
 
 - **Pagination, Filtering, and Search**: Efficiently browse products using pagination, filtering by categories, and searching for specific items.
 
+## Auth Routes
+
+- `POST` `/api/v1/signup` (signup)
+- `POST` `/api/v1/login` (user login)
+
+
 ## Environment Variables
 
 - `DB_HOST`
