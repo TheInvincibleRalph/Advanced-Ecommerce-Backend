@@ -72,7 +72,7 @@ func CheckoutHandler(db *gorm.DB) http.HandlerFunc {
 		orderDetails := fmt.Sprintf("Order ID: %d\nTotal: $%.2f", order.ID, order.TotalAmount)
 
 		// Send confirmation email
-		user, err := getUserByID(db, req.UserID)
+		user, err := getUserByID(req.UserID)
 		if err != nil {
 			http.Error(w, "User not found", http.StatusNotFound)
 			return
@@ -113,7 +113,7 @@ func OrderConfirmationHandler(db *gorm.DB) http.HandlerFunc {
 }
 
 // getUserByID retrieves a user from the database based on the provided user ID.
-func getUserByID(DB *gorm.DB, userID uint) (*models.User, error) {
+func getUserByID(userID uint) (*models.User, error) {
 	var user models.User
 	if err := config.DB.First(&user, userID).Error; err != nil {
 		return nil, err
