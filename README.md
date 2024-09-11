@@ -15,3 +15,15 @@ This is an advanced e-commerce backend built with the **Gorilla Mux** router and
 
 - **Pagination, Filtering, and Search**: Efficiently browse products using pagination, filtering by categories, and searching for specific items.
 
+## Environment Variables
+
+- `DB_HOST`
+- `DB_USER`
+- `DB_NAME`
+- `DB_PORT`
+- `DB_PASSWORD`
+- `MAILGUN_DOMAIN`
+- `JWT_SECRET_KEY`
+- `MAILGUN_API_KEY`
+- `STRIPE_SECRET_KEY`
+- `MAILGUN_PUBLIC_API_KEY`
