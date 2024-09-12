@@ -64,25 +64,25 @@ func ConnectDatabase() {
 }
 
 // func ReinitializeDatabase() {
-// err := DB.Migrator().DropTable(
-// 	&models.CartItem{},
-// 	&models.User{},
-// 	&models.Cart{},
-// 	&models.BlogPost{},
-// 	&models.Affliate{},
-// 	&models.Category{},
-// 	&models.Product{},
-// 	&models.OrderItem{},
-// 	&models.Order{},
-// 	&models.Payment{},
-// 	&models.Tag{},
-// 	&models.Inventory{},
-// 	&models.Review{},
-// 	&models.Profile{},
-// 	&models.Shipping{},
-// 	&models.Notification{},
-// )
-// if err != nil {
-// 	log.Fatal("Error dropping tables:", err)
-// }
+// 	err := DB.Migrator().DropTable(
+// 		&models.CartItem{},
+// 		&models.User{},
+// 		&models.Cart{},
+// 		&models.BlogPost{},
+// 		&models.Affliate{},
+// 		&models.Category{},
+// 		&models.Product{},
+// 		&models.Payment{},
+// 		&models.Shipping{},
+// 		&models.Order{},
+// 		&models.OrderItem{},
+// 		&models.Tag{},
+// 		&models.Inventory{},
+// 		&models.Review{},
+// 		&models.Profile{},
+// 		&models.Notification{},
+// 	)
+// 	if err != nil {
+// 		log.Fatal("Error dropping tables:", err)
+// 	}
 // }
