@@ -7,11 +7,11 @@ toolchain go1.22.6
 require (
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/go-redis/redis v6.15.9+incompatible
-	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/gorilla/mux v1.8.1
 	github.com/joho/godotenv v1.5.1
 	github.com/mailgun/mailgun-go v2.0.0+incompatible
+	github.com/redis/go-redis/v9 v9.6.1
 	github.com/stripe/stripe-go v70.15.0+incompatible
 	golang.org/x/crypto v0.25.0
 	google.golang.org/api v0.191.0
@@ -49,6 +49,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/onsi/gomega v1.34.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
