@@ -9,6 +9,7 @@ import (
 	"github.com/theinvincible/ecommerce-backend/config"
 	"github.com/theinvincible/ecommerce-backend/handlers"
 	"github.com/theinvincible/ecommerce-backend/partition"
+	"github.com/theinvincible/ecommerce-backend/utils"
 )
 
 func main() {
@@ -40,12 +41,12 @@ func main() {
 	// Product routes
 	router.HandleFunc("/api/v1/products", handlers.CreateProduct).Methods("POST")
 	router.HandleFunc("/api/v1/products", handlers.GetProducts).Methods("GET")
-	router.HandleFunc("/api/v1/products/{id}", handlers.GetProduct).Methods("GET")
+	router.HandleFunc("/api/v1/products/{id}", handlers.GetProductByID).Methods("GET")
 	router.HandleFunc("/api/v1/products/{id}", handlers.UpdateProduct).Methods("PUT")
 	// router.HandleFunc("/api/v1/products/{id}", handlers.DeleteProduct(db)).Methods("DELETE")
 
 	// Order routes
-	router.HandleFunc("/api/v1/orders", handlers.CreateOrderHandler(config.DB)).Methods("POST")
+	router.HandleFunc("/api/v1/addorders", handlers.CreateOrderHandler(config.DB)).Methods("POST")
 	router.HandleFunc("/api/v1/orders", handlers.GetOrders).Methods("GET")
 	router.HandleFunc("/api/v1/orders/{id}", handlers.GetOrder).Methods("GET")
 	router.HandleFunc("/api/v1/orders/{id}", handlers.UpdateOrder).Methods("PUT")
@@ -100,14 +101,12 @@ func main() {
 	// router.HandleFunc("/customer", CustomerHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("customer"))
 	// router.HandleFunc("/dashboard", DashboardHandler).Methods("GET").Subrouter().Use(handlers.RoleMiddleware("admin", "vendor"))
 
-	// rdbErr := utils.InitRedisClient()
-	// if rdbErr != nil {
-	// 	log.Fatal("Error connecting to Redis:", rdbErr)
-	// } else {
-	// 	log.Println("Connected to Redis successfully!")
-	// }
-
-	log.Println("Starting server...")
+	rdb := utils.InitRedisClient()
+	if rdb == nil {
+		log.Fatal("Failed to initialize Redis client")
+	} else {
+		log.Println("Redis client initialized successfully")
+	}
 
 	err := http.ListenAndServe(":3001", router)
 	if err != nil {
