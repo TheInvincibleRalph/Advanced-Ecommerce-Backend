@@ -236,7 +236,7 @@ func (ps *ProductServiceImpl) CreateProduct(product *models.Product) error {
 func GetProducts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// Retrieve pagination parameters
+	// Retrieve pagination and filtering parameters
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
 	sortBy := r.URL.Query().Get("sort_by")
@@ -246,26 +246,27 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 	maxPriceStr := r.URL.Query().Get("max_price")
 	search := r.URL.Query().Get("search")
 
-	// Default values and parameter parsing
+	// Set default pagination values
 	page := 1
 	limit := 10
 	if pageStr != "" {
-		var err error
-		page, err = strconv.Atoi(pageStr)
-		if err != nil {
+		if parsedPage, err := strconv.Atoi(pageStr); err == nil {
+			page = parsedPage
+		} else {
 			http.Error(w, "Invalid page number", http.StatusBadRequest)
 			return
 		}
 	}
 	if limitStr != "" {
-		var err error
-		limit, err = strconv.Atoi(limitStr)
-		if err != nil {
+		if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
+			limit = parsedLimit
+		} else {
 			http.Error(w, "Invalid limit number", http.StatusBadRequest)
 			return
 		}
 	}
 
+	// Set default sort and order values
 	if sortBy == "" {
 		sortBy = "name"
 	}
@@ -292,19 +293,23 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Initialize Redis client
-	redisClient := utils.InitRedisClient()
+	redisClient := utils.GetRedisClient()
 	cacheKey := fmt.Sprintf("products:%d:%d:%s:%s:%s:%s:%s:%s", page, limit, sortBy, order, category, minPriceStr, maxPriceStr, search)
 
-	// Create a context with a timeout for Redis operations
+	// Create context for Redis operations
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Check Redis cache
+	// Step 1: Check Redis cache
 	cachedProducts, err := redisClient.Get(ctx, cacheKey).Result()
 	if err == redis.Nil {
-		// Cache miss, fetch from the database
+		// Step 2: Cache miss, fetch from database
+		log.Println("Cache miss for products, fetching from database")
+
 		var products []models.Product
 		query := config.DB.Model(&models.Product{})
+
+		// Apply filters
 		if category != "" {
 			query = query.Where("category = ?", category)
 		}
@@ -317,30 +322,86 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 		if search != "" {
 			query = query.Where("name ILIKE ?", "%"+search+"%")
 		}
+
+		// Apply pagination and sorting
 		query = query.Offset((page - 1) * limit).Limit(limit)
 		if strings.ToLower(order) == "desc" {
 			query = query.Order(sortBy + " desc")
 		} else {
 			query = query.Order(sortBy + " asc")
 		}
+
+		// Execute query and fetch products
 		if err := query.Find(&products).Error; err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Printf("Database error: %v", err)
+			http.Error(w, "Error fetching products", http.StatusInternalServerError)
 			return
 		}
 
-		// Cache the result
+		// Step 3: Cache the result in Redis
 		productsJSON, err := json.Marshal(products)
 		if err == nil {
 			redisClient.Set(ctx, cacheKey, productsJSON, 10*time.Minute)
+		} else {
+			log.Printf("Error marshalling products: %v", err)
 		}
+
+		// Step 4: Return the result from the database
 		w.Write(productsJSON)
+
 	} else if err != nil {
-		// Redis error
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		// Redis error, fallback to database
+		log.Printf("Redis error: %v, falling back to database", err)
+		// Continue to database fetch if Redis fails
 	} else {
-		// Cache hit, return cached products
+		// Step 5: Cache hit, return cached products
+		log.Println("Cache hit, returning cached products")
 		w.Write([]byte(cachedProducts))
+		return
 	}
+
+	// Fallback to database if Redis fails
+	var products []models.Product
+	query := config.DB.Model(&models.Product{})
+
+	// Apply filters again
+	if category != "" {
+		query = query.Where("category = ?", category)
+	}
+	if minPriceStr != "" {
+		query = query.Where("price >= ?", minPrice)
+	}
+	if maxPriceStr != "" {
+		query = query.Where("price <= ?", maxPrice)
+	}
+	if search != "" {
+		query = query.Where("name ILIKE ?", "%"+search+"%")
+	}
+
+	// Apply pagination and sorting
+	query = query.Offset((page - 1) * limit).Limit(limit)
+	if strings.ToLower(order) == "desc" {
+		query = query.Order(sortBy + " desc")
+	} else {
+		query = query.Order(sortBy + " asc")
+	}
+
+	// Execute the database query
+	if err := query.Find(&products).Error; err != nil {
+		log.Printf("Database error: %v", err)
+		http.Error(w, "Error fetching products", http.StatusInternalServerError)
+		return
+	}
+
+	// Return products from database
+	productsJSON, err := json.Marshal(products)
+	if err != nil {
+		log.Printf("Error marshalling products: %v", err)
+		http.Error(w, "Error preparing products data", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(productsJSON)
 }
 
 // GetProductByID returns a product by ID
@@ -370,7 +431,7 @@ func GetProductByID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Cache the result in Redis
+		// Marshal the product into JSON format
 		productJSON, err := json.Marshal(product)
 		if err != nil {
 			log.Printf("Error marshalling product ID %s: %v", id, err)
@@ -378,23 +439,43 @@ func GetProductByID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Store the product in Redis with a timeout
+		// Cache the result in Redis for future requests (non-critical)
 		if err := redisClient.Set(ctx, cacheKey, productJSON, 10*time.Minute).Err(); err != nil {
+			// Log the error but do not return an error to the client
 			log.Printf("Error caching product ID %s: %v", id, err)
 		}
 
-		// Return the result from the database
-		log.Printf("Returning product data for ID: %s from database", id)
+		// Return the product data from the database
 		w.Write(productJSON)
+		return
 	} else if err != nil {
-		// Log Redis connection or retrieval error
-		log.Printf("Redis error while fetching product with ID %s: %v", id, err)
-		http.Error(w, "Internal Server Error: Redis problem", http.StatusInternalServerError)
+		// Redis is down or some error happened, just log and proceed to the database
+		log.Printf("Redis is unavailable or other issue, querying database for product ID: %s", id)
 	} else {
 		// Cache hit, return cached product
 		log.Printf("Returning cached product data for ID: %s", id)
 		w.Write([]byte(cachedProduct))
+		return
 	}
+
+	// If Redis fails, query the database and proceed
+	var product models.Product
+	if err := config.DB.Where("id = ?", id).First(&product).Error; err != nil {
+		log.Printf("Database error while fetching product with ID %s: %v", id, err)
+		http.Error(w, "Product not found", http.StatusNotFound)
+		return
+	}
+
+	// Marshal the product into JSON
+	productJSON, err := json.Marshal(product)
+	if err != nil {
+		log.Printf("Error marshalling product ID %s: %v", id, err)
+		http.Error(w, "Error marshalling product data", http.StatusInternalServerError)
+		return
+	}
+
+	// Return the product data from the database
+	w.Write(productJSON)
 }
 
 // UpdateProduct updates a product by ID
