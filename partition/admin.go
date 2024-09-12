@@ -1,6 +1,7 @@
 package partition
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -33,8 +34,12 @@ func AdminDashboardHandler(w http.ResponseWriter, r *http.Request) {
 	var dashboardData map[string]interface{}
 	cacheKey := "admin_dashboard"
 
+	// Create a context with a timeout for Redis operations
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	// Attempt to get the cached dashboard data from Redis
-	cachedData, err := utils.InitRedisClient().Get(cacheKey).Result()
+	cachedData, err := utils.InitRedisClient().Get(ctx, cacheKey).Result()
 	if err == redis.Nil {
 		// Cache miss: Fetch from the database
 		var userCount, productCount, orderCount int64
@@ -53,9 +58,7 @@ func AdminDashboardHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to retrieve order count", http.StatusInternalServerError)
 			return
 		}
-		// To automatically populate data such as userCount, productCount, and orderCount.
-		// They are retrieved from the database every time the admin dashboard is accessed.
-		// This ensures that the data displayed is always up to date.
+
 		dashboardData = map[string]interface{}{
 			"userCount":    userCount,
 			"productCount": productCount,
@@ -64,7 +67,7 @@ func AdminDashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Cache the data in Redis with an expiration time
 		jsonData, _ := json.Marshal(dashboardData)
-		utils.InitRedisClient().Set(cacheKey, jsonData, time.Minute)
+		utils.InitRedisClient().Set(ctx, cacheKey, jsonData, time.Minute)
 	} else if err != nil {
 		// Redis error
 		http.Error(w, "Failed to retrieve data", http.StatusInternalServerError)
