@@ -8,6 +8,7 @@ import (
 
 type Order struct {
 	gorm.Model
+	OrderID            int         `json:"order_id" gorm:"not null"`
 	UserID             int         `json:"user_id" gorm:"not null"`
 	ProductID          int         `json:"product_id" gorm:"not null"`
 	Quantity           int         `json:"quantity" gorm:"not null"`
@@ -20,5 +21,6 @@ type Order struct {
 	OrderTotal         string      `json:"order_total"`
 	OrderDiscount      string      `json:"order_discount"`
 	OrderPaymentStatus string      `json:"order_payment_status"`
-	OrderID            int         `json:"order_id" gorm:"not null"`
+	// ShippingID         int         `json:"shipping_id" gorm:"not null"`
+	// Shipping           Shipping    `json:"shipping" gorm:"foreignKey:ShippingID"`
 }
