@@ -29,6 +29,13 @@ This is an advanced e-commerce backend built with the **Gorilla Mux** router and
 - `PUT` `/api/v1/users/{id}` (update user)
 - `DELETE` `/api/v1/users/{id}` (delete user)
 
+## Product Routes
+
+- `POST` `/api/v1/products` (add product)
+- `GET` `/api/v1/products` (get products)
+- `GET` `/api/v1/products/{id}` (get product by id)
+- `PUT` `/api/v1/products/{id}` (update product)
+- `DELETE` `/api/v1/products/{id}` (delete product)
 
 ## Environment Variables
 
