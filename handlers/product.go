@@ -38,8 +38,6 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 		"message": "Product created successfully",
 		"product": product,
 	}
-
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
 	// json.NewEncoder(w).Encode(product)
