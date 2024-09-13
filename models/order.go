@@ -21,6 +21,4 @@ type Order struct {
 	OrderTotal         string      `json:"order_total"`
 	OrderDiscount      string      `json:"order_discount"`
 	OrderPaymentStatus string      `json:"order_payment_status"`
-	// ShippingID         int         `json:"shipping_id" gorm:"not null"`
-	// Shipping           Shipping    `json:"shipping" gorm:"foreignKey:ShippingID"`
 }
